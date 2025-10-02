@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acesso • Van Já</title>
+
+  <!-- Fonte  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="login.css">
+</head>
+<body class="login-bg">
+  <main class="login-container" role="main">
+    <a class="login-voltar" href="index.html">← Voltar para a página inicial</a>
+
+    <section class="login-card" aria-labelledby="titulo-login">
+      <header class="login-card-header">
+        <img class="login-logo" src="imagens/van.png" alt="Van Já" />
+        <h1 id="titulo-login">Acesso Van Já</h1>
+        <p class="login-sub">Entre na sua conta para ver as rotas.</p>
+      </header>
+
+      <form class="login-form" action="/sessao" method="post" novalidate>
+        <div class="login-campo">
+          <label for="email">Seu e-mail</label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="exemplo@email.com" required>
+          <small class="msg-erro" aria-live="polite"></small>
+        </div>
+
+        <div class="login-campo">
+          <label for="senha">Sua senha</label>
+          <input id="senha" name="senha" type="password" autocomplete="current-password" placeholder="••••••••" required minlength="6">
+          <small class="msg-erro" aria-live="polite"></small>
+        </div>
+
+        
+        <div class="login-aux">
+          <a class="link esqueci-senha" href="/recuperar-senha">Esqueci minha senha</a>
+        </div>
+
+        <button class="botao botao-primario botao-login" type="submit">Entrar</button>
+
+       
+        <p class="criar-conta">
+          Não tem conta? <a class="link" href="cadastrar.html">Cadastre-se</a>
+        </p>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

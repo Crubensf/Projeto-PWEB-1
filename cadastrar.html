@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadastro • Van Já</title>
+
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cadastrar.css">
+</head>
+<body class="cadastro-bg">
+  <main class="cadastro-container" role="main">
+    <a class="cadastro-voltar" href="index.html">← Voltar para a página inicial</a>
+
+    <section class="cadastro-card" aria-labelledby="titulo-cadastro">
+      <header class="cadastro-card-header">
+        <img class="cadastro-logo" src="imagens/van.png" alt="Van Já" />
+        <h1 id="titulo-cadastro">Crie sua conta</h1>
+        <p class="cadastro-sub">Leva menos de um minuto. Depois, você já pode ver e reservar rotas.</p>
+      </header>
+
+      <form class="cadastro-form" action="/usuarios" method="post" novalidate>
+        <!-- campo nome -->
+        <div class="cadastro-campo">
+          <label for="nome">Nome completo</label>
+          <input id="nome" name="nome" type="text" placeholder="Seu nome" autocomplete="name" required>
+          <small class="msg-erro" aria-live="polite"></small>
+        </div>
+
+        <!-- campo E-mail -->
+        <div class="cadastro-campo">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" inputmode="email" placeholder="exemplo@email.com" autocomplete="email" required>
+          <small class="msg-erro" aria-live="polite"></small>
+        </div>
+
+        <!-- campo da Senha -->
+        <div class="cadastro-campo">
+          <label for="senha">Senha</label>
+          <input id="senha" name="senha" type="password" placeholder="••••••••" autocomplete="new-password" minlength="6" required>
+          <small class="msg-erro" aria-live="polite"></small>
+        </div>
+
+        <!-- confirma senha  -->
+        <div class="cadastro-campo">
+          <label for="confirmar">Confirmar senha</label>
+          <input id="confirmar" name="confirmar" type="password" placeholder="Repita sua senha" autocomplete="new-password" minlength="6" required>
+          <small class="msg-erro" aria-live="polite"></small>
+          <small class="ajuda-senha">Use pelo menos 6 caracteres. Combine letras e números para mais segurança.</small>
+        </div>
+
+        <!-- estudante ou motorista-->
+        <div class="cadastro-campo">
+          <label for="perfil">Você é</label>
+          <select id="perfil" name="perfil" autocomplete="off" required>
+            <option value="" disabled selected>Selecione</option>
+            <option value="estudante">Estudante</option>
+            <option value="motorista">Motorista</option>
+          </select>
+          <small class="msg-erro" aria-live="polite"></small>
+        </div>
+
+        <div class="cadastro-termos">
+          <label class="check">
+            <input type="checkbox" id="aceite" name="aceite" required>
+            <span>Li e aceito os <a class="link" href="/termos" target="_blank" rel="noopener">Termos de Uso</a> e a <a class="link" href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.</span>
+          </label>
+        </div>
+
+        <button class="botao botao-primario botao-cadastrar" type="submit">Criar conta</button>
+
+        <p class="ja-tem">
+          Já tem conta? <a class="link" href="login.html">Entrar</a>
+        </p>
+      </form>
+    </section>
+  </main>
+
+ 
+  <script>
+    (function () {
+      const form = document.querySelector('.cadastro-form');
+      const senha = document.getElementById('senha');
+      const confirmar = document.getElementById('confirmar');
+      const msgConfirm = confirmar?.parentElement?.querySelector('.msg-erro');
+
+      form?.addEventListener('submit', function (e) {
+        if (senha && confirmar && senha.value !== confirmar.value) {
+          e.preventDefault();
+          if (msgConfirm) msgConfirm.textContent = 'As senhas não coincidem.';
+          confirmar.focus();
+        }
+      });
+
+      confirmar?.addEventListener('input', () => {
+        if (msgConfirm) msgConfirm.textContent = '';
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+
+.page-resultados {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.page-resultados > main {
+  flex: 1; 
+}
+
+
+.faixa-filtros{
+  background: linear-gradient(160deg, var(--verde-900), var(--verde-700));
+  padding: 18px 0;
+  color: #fff;
+}
+.filtros-wrap{
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+.grupo-input{ display: grid; gap: 6px; }
+.grupo-input label{ font-size: .9rem; font-weight: 700; opacity: .95; }
+.grupo-input input{
+  padding: 12px 14px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.28);
+  background: rgba(255,255,255,.12);
+  color: #fff; outline: none;
+}
+.grupo-input input::placeholder{ color: rgba(255,255,255,.82); }
+.grupo-input input:focus{
+  border-color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.25);
+}
+.botao-buscar{ align-self: end; padding-inline: 18px; font-weight: 800; }
+
+
+.topo-lista{ padding: 20px 0 10px; }
+.titulo-lista{
+  margin: 0 0 12px;
+  font-size: clamp(1.4rem, 1rem + 1.5vw, 2rem);
+  font-weight: 800; color: var(--texto);
+}
+.dias{ display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-dia{
+  appearance: none; border: 1px solid #e5e7eb; background: #f3f4f6;
+  color: var(--texto); padding: 8px 12px; border-radius: 999px;
+  font-weight: 700; font-size: .9rem; cursor: pointer;
+  transition: transform .08s ease, background .12s ease;
+}
+.chip-dia:hover{ transform: translateY(-1px); }
+.chip-dia.ativo{ background: var(--verde-50); color: var(--verde-700); border-color: rgba(23,106,83,.35); }
+
+/* ===== Lista de resultados ===== */
+.resultados{ background: #f7faf8; }
+.lista-resultados{ display: grid; gap: 12px; }
+
+/* Card */
+.linha-card{
+  background: #f1f5f9; border: 1px solid #e5e7eb; border-radius: 18px;
+  padding: 14px; box-shadow: var(--sombra);
+}
+.linha-topo{
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; margin-bottom: 8px;
+}
+.nome-motorista{ margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--texto); }
+
+.botao-suave{
+  background: #e5e7eb; color: var(--texto); border-radius: 999px;
+  padding: 8px 12px; text-decoration: none; font-weight: 700; display: inline-block;
+}
+.botao-suave:hover{ filter: brightness(.96); }
+
+.linha-info{
+  display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+}
+.origem-destino{
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-weight: 600;
+}
+.cidade{ position: relative; padding-inline: 4px; }
+.cidade.origem::before, .cidade.destino::before{
+  content: ''; position: absolute; left: 0; right: 0; bottom: -4px;
+  height: 3px; border-radius: 999px; background: var(--verde-700); opacity: .35;
+}
+.separador{ opacity: .5; }
+
+.horarios{ display: grid; grid-auto-flow: column; gap: 14px; align-items: end; }
+.horario{ text-align: right; }
+.horario .rotulo{ display: block; font-size: .85rem; color: var(--muted); }
+.horario .hora{ display: block; font-size: 1.4rem; font-weight: 800; color: var(--texto); }
+
+/* Sem resultados */
+.sem-resultados{ margin: 10px 0 0; color: var(--muted); text-align: center; }
+
+
+@media (max-width: 900px){
+  .filtros-wrap{ grid-template-columns: 1fr; }
+  .botao-buscar{ justify-self: start; }
+  .linha-info{ grid-template-columns: 1fr; }
+  .horarios{ grid-auto-flow: row; justify-items: start; }
+  .horario{ text-align: left; }
+}

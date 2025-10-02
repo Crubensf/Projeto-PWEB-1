@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rotas disponíveis hoje • Van Já</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="rotas.css">
+</head>
+<body class="page-rotas">
+  <!-- Header -->
+  <header class="cabecalho-site" role="banner">
+    <div class="caixa caixa--header linha-cabecalho">
+      <a class="marca" href="index.html" aria-label="Van Já — Página inicial">
+        <img src="imagens/van.png" alt="Ícone de Van" class="icone-van">
+        Van Já
+      </a>
+
+      <nav class="navegacao" aria-label="Principal">
+        <a href="index.html#rotas">Rotas</a>
+        <a href="index.html#ajuda">Ajuda</a>
+      </nav>
+
+      <div class="acoes-header">
+        <a class="botao botao-invertido" href="login.html">Login</a>
+        <a class="botao botao-primario" href="cadastrar.html">Cadastrar</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    
+    <section class="faixa-filtros" aria-label="Filtros de busca">
+      <div class="caixa filtros-wrap">
+        <div class="grupo-input">
+          <label for="origem">Saindo de</label>
+          <input id="origem" type="text" placeholder="Digite a origem (ex.: Picos)">
+        </div>
+
+        <div class="grupo-input">
+          <label for="destino">Indo para</label>
+          <input id="destino" type="text" placeholder="Digite o destino (ex.: Oeiras)">
+        </div>
+
+        <button class="botao botao-primario botao-buscar" type="button" id="btnNovaBusca">
+          Nova busca
+        </button>
+      </div>
+    </section>
+
+    <!-- Título e dias -->
+    <section class="secao topo-lista">
+      <div class="caixa">
+        <h1 class="titulo-lista" id="tituloLista">Rotas disponíveis hoje</h1>
+
+        <div class="dias" role="tablist" aria-label="Filtrar por dia da semana">
+          <button class="chip-dia" role="tab" aria-selected="false">Domingo</button>
+          <button class="chip-dia" role="tab" aria-selected="false">Segunda</button>
+          <button class="chip-dia" role="tab" aria-selected="false">Terça</button>
+          <button class="chip-dia" role="tab" aria-selected="false">Quarta</button>
+          <button class="chip-dia" role="tab" aria-selected="false">Quinta</button>
+          <button class="chip-dia" role="tab" aria-selected="false">Sexta</button>
+          <button class="chip-dia" role="tab" aria-selected="false">Sábado</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resultados -->
+    <section class="secao resultados" aria-labelledby="tituloLista">
+      <div class="caixa lista-resultados">
+        <!-- 1 -->
+        <article class="linha-card">
+          <header class="linha-topo">
+            <h2 class="nome-motorista">José Carlos</h2>
+            <a class="botao botao-suave" href="">Saiba mais</a>
+          </header>
+          <div class="linha-info">
+            <div class="origem-destino">
+              <span class="cidade origem">Picos</span>
+              <span class="separador">—</span>
+              <span class="cidade destino">Oeiras</span>
+            </div>
+            <div class="horarios">
+              <div class="horario"><span class="rotulo">Saída</span><strong class="hora">14:00</strong></div>
+              <div class="horario"><span class="rotulo">Chegada</span><strong class="hora">15:40</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2 -->
+        <article class="linha-card">
+          <header class="linha-topo">
+            <h2 class="nome-motorista">Antônio Luiz</h2>
+            <a class="botao botao-suave" href="">Saiba mais</a>
+          </header>
+          <div class="linha-info">
+            <div class="origem-destino">
+              <span class="cidade origem">Picos</span>
+              <span class="separador">—</span>
+              <span class="cidade destino">Oeiras</span>
+              <span class="separador">—</span>
+              <span class="cidade destino">Floriano</span>
+            </div>
+            <div class="horarios">
+              <div class="horario"><span class="rotulo">Saída</span><strong class="hora">14:00</strong></div>
+              <div class="horario"><span class="rotulo">Chegada</span><strong class="hora">18:00</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 3 -->
+        <article class="linha-card">
+          <header class="linha-topo">
+            <h2 class="nome-motorista">Marcos Vinícius</h2>
+            <a class="botao botao-suave" href="">Saiba mais</a>
+          </header>
+          <div class="linha-info">
+            <div class="origem-destino">
+              <span class="cidade origem">Geminiano</span>
+              <span class="separador">→</span>
+              <span class="cidade destino">UESPI</span>
+            </div>
+            <div class="horarios">
+              <div class="horario"><span class="rotulo">Saída</span><strong class="hora">06:10</strong></div>
+              <div class="horario"><span class="rotulo">Chegada</span><strong class="hora">07:00</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 4 -->
+        <article class="linha-card">
+          <header class="linha-topo">
+            <h2 class="nome-motorista">João Paulo</h2>
+            <a class="botao botao-suave" href="">Saiba mais</a>
+          </header>
+          <div class="linha-info">
+            <div class="origem-destino">
+              <span class="cidade origem">São José</span>
+              <span class="separador">→</span>
+              <span class="cidade destino">UFPI</span>
+            </div>
+            <div class="horarios">
+              <div class="horario"><span class="rotulo">Saída</span><strong class="hora">06:10</strong></div>
+              <div class="horario"><span class="rotulo">Chegada</span><strong class="hora">07:00</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 5 -->
+        <article class="linha-card">
+          <header class="linha-topo">
+            <h2 class="nome-motorista">José Feitosa</h2>
+            <a class="botao botao-suave" href="">Saiba mais</a>
+          </header>
+          <div class="linha-info">
+            <div class="origem-destino">
+              <span class="cidade origem">Santana do Piaui</span>
+              <span class="separador">→</span>
+              <span class="cidade destino">UFPI</span>
+            </div>
+            <div class="horarios">
+              <div class="horario"><span class="rotulo">Saída</span><strong class="hora">06:20</strong></div>
+              <div class="horario"><span class="rotulo">Chegada</span><strong class="hora">07:00</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 6 -->
+        <article class="linha-card">
+          <header class="linha-topo">
+            <h2 class="nome-motorista">Pedro Henrique</h2>
+            <a class="botao botao-suave" href="">Saiba mais</a>
+          </header>
+          <div class="linha-info">
+            <div class="origem-destino">
+              <span class="cidade origem">Dom Espedito Lopes</span>
+              <span class="separador">→</span>
+              <span class="cidade destino">UFPI</span>
+            </div>
+            <div class="horarios">
+              <div class="horario"><span class="rotulo">Saída</span><strong class="hora">06:50</strong></div>
+              <div class="horario"><span class="rotulo">Chegada</span><strong class="hora">07:30</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 7 -->
+        <article class="linha-card">
+          <header class="linha-topo">
+            <h2 class="nome-motorista">Rafael Sousa</h2>
+            <a class="botao botao-suave" href="">Saiba mais</a>
+          </header>
+          <div class="linha-info">
+            <div class="origem-destino">
+              <span class="cidade origem">Padre Marcos</span>
+              <span class="separador">→</span>
+              <span class="cidade destino">UFPI</span>
+            </div>
+            <div class="horarios">
+              <div class="horario"><span class="rotulo">Saída</span><strong class="hora">06:00</strong></div>
+              <div class="horario"><span class="rotulo">Chegada</span><strong class="hora">07:20</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 8 -->
+        <article class="linha-card">
+          <header class="linha-topo">
+            <h2 class="nome-motorista">Carlos Júnior</h2>
+            <a class="botao botao-suave" href="">Saiba mais</a>
+          </header>
+          <div class="linha-info">
+            <div class="origem-destino">
+              <span class="cidade origem">Pio IX</span>
+              <span class="separador">→</span>
+              <span class="cidade destino">UESPI/VM</span>
+            </div>
+            <div class="horarios">
+              <div class="horario"><span class="rotulo">Saída</span><strong class="hora">07:00</strong></div>
+              <div class="horario"><span class="rotulo">Chegada</span><strong class="hora">07:50</strong></div>
+            </div>
+          </div>
+        </article>
+
+        <p class="sem-resultados" hidden>Nenhuma rota encontrada para os filtros selecionados.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape-site" role="contentinfo">
+    <div class="caixa">
+      <p>© 2025 Van Já. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const dias = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+      const hoje = new Date().getDay();
+      const chips = document.querySelectorAll('.chip-dia');
+      const titulo = document.getElementById('tituloLista');
+
+      chips.forEach((chip, i) => {
+        chip.addEventListener('click', () => {
+          chips.forEach(c => { c.classList.remove('ativo'); c.setAttribute('aria-selected','false'); });
+          chip.classList.add('ativo'); chip.setAttribute('aria-selected','true');
+          titulo.textContent = `Rotas disponíveis — ${chip.textContent}`;
+        });
+        if (i === hoje) { chip.classList.add('ativo'); chip.setAttribute('aria-selected','true'); }
+      });
+
+      titulo.textContent = 'Rotas disponíveis hoje';
+
+      document.getElementById('btnNovaBusca')?.addEventListener('click', () => {
+        document.querySelector('.resultados')?.scrollIntoView({behavior:'smooth'});
+      });
+    })();
+  </script>
+</body>
+</html>

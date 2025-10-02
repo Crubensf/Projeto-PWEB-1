@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Van Já — Rotas Universitárias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- cabeçalho -->
+  <header class="cabecalho-site" role="banner">
+    <div class="caixa caixa--header linha-cabecalho">
+      <a class="marca" href="index.html" aria-label="Van Já — Página inicial">
+        <img src="imagens/van.png" alt="Ícone de Van" class="icone-van">
+        Van Já
+      </a>
+
+      <nav class="navegacao" aria-label="Principal">
+        <a href="#rotas">Rotas</a>
+        <a href="#ajuda">Ajuda</a>
+      </nav>
+
+      <!-- Botoes login e cadastrar -->
+      <div class="acoes-header">
+        <a class="botao botao-invertido" href="login.html">Login</a>
+        <a class="botao botao-primario" href="cadastrar.html">Cadastrar</a>
+      </div>
+    </div>
+  </header>
+
+ 
+  <main id="conteudo">
+    <!-- Hero -->
+    <section class="faixa-principal" aria-labelledby="titulo-principal">
+      <div class="caixa faixa-conteudo">
+        <h1 id="titulo-principal">Facilite sua locomoção até a universidade</h1>
+        <p class="texto-apoio">
+          O Van Já conecta estudantes às rotas universitárias diárias de forma rápida, 
+          segura e acessível. Encontre a van ideal e chegue ao campus sem preocupações.
+        </p>
+        <a class="botao botao-primario" href="rotas.html">Ver rotas disponíveis</a>
+      </div>
+    </section>
+
+    <!-- cards das rotas -->
+    <section id="rotas" class="secao" aria-labelledby="titulo-rotas">
+      <div class="caixa">
+        <h2 id="titulo-rotas" class="titulo-secao">Rotas em Destaque</h2>
+
+        <div class="grade-cartoes tres-colunas">
+          <article class="cartao rota">
+            <h3>Oeiras → UFPI</h3>
+            <ul class="lista-chip">
+              <li class="chip">90 min</li>
+              <li class="chip">chegada 07:30</li>
+            </ul>
+            <div class="rodape-rota">
+              <span class="preco">R$ 10,00</span>
+              <a class="botao botao-primario" href="">Ver rota</a>
+            </div>
+          </article>
+
+          <article class="cartao rota">
+            <h3>São José → UFPI</h3>
+            <ul class="lista-chip">
+              <li class="chip">50 min</li>
+              <li class="chip">chegada 07:00</li>
+            </ul>
+            <div class="rodape-rota">
+              <span class="preco">R$ 15,00</span>
+              <a class="botao botao-primario" href="rotas/fatima-uespi.html">Ver rota</a>
+            </div>
+          </article>
+
+          <article class="cartao rota">
+            <h3>Pio IX → UFPI</h3>
+            <ul class="lista-chip">
+              <li class="chip">50 min</li>
+              <li class="chip">07:50</li>
+            </ul>
+            <div class="rodape-rota">
+              <span class="preco">R$ 16,00</span>
+              <a class="botao botao-primario" href="rotas/centro-uespi.html">Ver rota</a>
+            </div>
+          </article>
+        </div>
+
+        <p class="mais"><a class="link" href="rotas.html">Ver todas as rotas disponíveis</a></p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="ajuda" class="secao suave" aria-labelledby="titulo-faq">
+      <div class="caixa">
+        <h2 id="titulo-faq" class="titulo-secao">Perguntas Frequentes</h2>
+
+        <div class="grade-faq">
+          <details class="item-faq">
+            <summary>Como faço o pagamento?</summary>
+            <p>Pix, Especie ou cartão.</p>
+          </details>
+
+          <details class="item-faq">
+            <summary>As vans são pontuais?</summary>
+            <p>Sim. Acompanhamos horários e mantemos contato direto com os motoristas.</p>
+          </details>
+
+          <details class="item-faq">
+            <summary>É seguro viajar de van?</summary>
+            <p>Os motoristas são verificados e  as vans mantem a manutenção em dia. Wi-Fi e ar-condicionado em grande parte da frota.</p>
+          </details>
+
+          <figure class="depoimento">
+            <img class="avatar" src="" alt="Foto de estudante" />
+            <figcaption>
+              <p class="citacao">Chego à aula no horário e com segurança. Economia e conforto todo mês.</p>
+              <span class="autor">Estudante, UFPI</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- footer -->
+  <footer class="rodape-site" role="contentinfo">
+    <div class="caixa">
+      <p>© 2025 Van Já. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+</body>
+</html>
