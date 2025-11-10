@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadastro de Rotas • Van Já</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/cadastroRotas.css">
+</head>
+<body class="rotas-bg">
+  <main class="rotas-container" role="main">
+    <a class="voltar" href="index.html">← Voltar</a>
+    <section class="rotas-card" aria-labelledby="titulo-rotas">
+      <header class="rotas-header">
+        <img class="rotas-logo" src="imagens/van.png" alt="Van Já">
+        <h1 id="titulo-rotas" class="rotas-title">Cadastrar rota</h1>
+        <p class="rotas-sub">Preencha os dados da sua rota.</p>
+      </header>
+
+      <form id="cadastroRotas" action="/rotas" method="post" enctype="multipart/form-data" novalidate>
+        <div class="grid grid-2">
+          <div class="campo">
+            <label for="nome">Nome da rota</label>
+            <input id="nome" name="nome" type="text" placeholder="Ex.: Picos ⇄ UFPI" required>
+            <small class="erro" data-err-for="nome"></small>
+          </div>
+          <div class="campo">
+            <label for="preco_vis">Preço por assento</label>
+            <input id="preco_vis" name="preco_vis" type="text" inputmode="decimal" placeholder="R$ 0,00" required>
+            <input id="preco" name="preco" type="hidden">
+            <small class="erro" data-err-for="preco"></small>
+          </div>
+          <div class="campo">
+            <label for="origem">Origem</label>
+            <input id="origem" name="origem" type="text" placeholder="Bairro/Cidade" required>
+            <small class="erro" data-err-for="origem"></small>
+          </div>
+          <div class="campo">
+            <label for="destino">Destino</label>
+            <input id="destino" name="destino" type="text" placeholder="Campus/Bairro/Cidade" required>
+            <small class="erro" data-err-for="destino"></small>
+          </div>
+          <div class="campo">
+            <label for="partida">Hora de partida</label>
+            <input id="partida" name="partida" type="time" required>
+            <small class="erro" data-err-for="partida"></small>
+          </div>
+          <div class="campo">
+            <label for="retorno">Hora de retorno</label>
+            <input id="retorno" name="retorno" type="time">
+            <small class="erro" data-err-for="retorno"></small>
+          </div>
+          <div class="campo">
+            <label for="vagas">Vagas</label>
+            <input id="vagas" name="vagas" type="number" min="1" max="99" placeholder="Ex.: 12" required>
+            <small class="erro" data-err-for="vagas"></small>
+          </div>
+          <div class="campo">
+            <label for="veiculo">Veículo</label>
+            <select id="veiculo" name="veiculo" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="van">Van</option>
+              <option value="micro-onibus">Micro-ônibus</option>
+              <option value="carro">Carro</option>
+              <option value="outro">Outro</option>
+            </select>
+            <small class="erro" data-err-for="veiculo"></small>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Dias da semana</label>
+          <div class="dias">
+            <label class="dia"><input type="checkbox" name="dias[]" value="seg"> Seg</label>
+            <label class="dia"><input type="checkbox" name="dias[]" value="ter"> Ter</label>
+            <label class="dia"><input type="checkbox" name="dias[]" value="qua"> Qua</label>
+            <label class="dia"><input type="checkbox" name="dias[]" value="qui"> Qui</label>
+            <label class="dia"><input type="checkbox" name="dias[]" value="sex"> Sex</label>
+            <label class="dia"><input type="checkbox" name="dias[]" value="sab"> Sáb</label>
+            <label class="dia"><input type="checkbox" name="dias[]" value="dom"> Dom</label>
+          </div>
+          <small class="erro" data-err-for="dias"></small>
+        </div>
+
+        <div class="separador"></div>
+
+        <div class="campo">
+          <label>Pontos de parada</label>
+          <div id="listaParadas" class="grid"></div>
+          <div class="acoes">
+            <button type="button" id="addParada" class="btn btn-secundario">+ Adicionar parada</button>
+          </div>
+          <small>Locais onde você pega/descarta passageiros.</small>
+        </div>
+
+        <div class="separador"></div>
+
+        <div class="grid grid-2">
+          <div class="campo">
+            <label for="imagem">Imagem da rota (opcional)</label>
+            <input id="imagem" name="imagem" class="file" type="file" accept="image/*">
+            <small>Tamanho máximo 5 MB.</small>
+          </div>
+          <div class="campo">
+            <label for="observacoes">Observações (opcional)</label>
+            <textarea id="observacoes" name="observacoes" rows="3" placeholder="Regras, ponto de encontro, tolerância de atraso, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="rodape-form">
+          <button class="btn btn-primario" type="submit">Cadastrar rota</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+<!-- Script -->
+ <script src="/js/storage.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/rotasService.js"></script>
+<script src="/js/app-cadastro-rotas.js"></script>
+</body>
+</html>

@@ -8,11 +8,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="rotas.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/rotas.css">
 </head>
 <body class="page-rotas">
-  <!-- Header -->
+ 
   <header class="cabecalho-site" role="banner">
     <div class="caixa caixa--header linha-cabecalho">
       <a class="marca" href="index.html" aria-label="Van Já — Página inicial">
@@ -52,7 +52,7 @@
       </div>
     </section>
 
-    <!-- Título e dias -->
+    
     <section class="secao topo-lista">
       <div class="caixa">
         <h1 class="titulo-lista" id="tituloLista">Rotas disponíveis hoje</h1>
@@ -69,10 +69,10 @@
       </div>
     </section>
 
-    <!-- Resultados -->
+    
     <section class="secao resultados" aria-labelledby="tituloLista">
       <div class="caixa lista-resultados">
-        <!-- 1 -->
+      
         <article class="linha-card">
           <header class="linha-topo">
             <h2 class="nome-motorista">José Carlos</h2>
@@ -91,7 +91,7 @@
           </div>
         </article>
 
-        <!-- 2 -->
+        
         <article class="linha-card">
           <header class="linha-topo">
             <h2 class="nome-motorista">Antônio Luiz</h2>
@@ -112,7 +112,7 @@
           </div>
         </article>
 
-        <!-- 3 -->
+        
         <article class="linha-card">
           <header class="linha-topo">
             <h2 class="nome-motorista">Marcos Vinícius</h2>
@@ -131,7 +131,7 @@
           </div>
         </article>
 
-        <!-- 4 -->
+       
         <article class="linha-card">
           <header class="linha-topo">
             <h2 class="nome-motorista">João Paulo</h2>
@@ -150,7 +150,7 @@
           </div>
         </article>
 
-        <!-- 5 -->
+        
         <article class="linha-card">
           <header class="linha-topo">
             <h2 class="nome-motorista">José Feitosa</h2>
@@ -169,7 +169,7 @@
           </div>
         </article>
 
-        <!-- 6 -->
+        
         <article class="linha-card">
           <header class="linha-topo">
             <h2 class="nome-motorista">Pedro Henrique</h2>
@@ -188,7 +188,7 @@
           </div>
         </article>
 
-        <!-- 7 -->
+        
         <article class="linha-card">
           <header class="linha-topo">
             <h2 class="nome-motorista">Rafael Sousa</h2>
@@ -207,7 +207,7 @@
           </div>
         </article>
 
-        <!-- 8 -->
+        
         <article class="linha-card">
           <header class="linha-topo">
             <h2 class="nome-motorista">Carlos Júnior</h2>
@@ -233,32 +233,15 @@
 
   <footer class="rodape-site" role="contentinfo">
     <div class="caixa">
-      <p>© 2025 Van Já. Todos os direitos reservados.</p>
+      <p>© 2025 Van Já.</p>
     </div>
   </footer>
 
-  <script>
-    (function () {
-      const dias = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
-      const hoje = new Date().getDay();
-      const chips = document.querySelectorAll('.chip-dia');
-      const titulo = document.getElementById('tituloLista');
-
-      chips.forEach((chip, i) => {
-        chip.addEventListener('click', () => {
-          chips.forEach(c => { c.classList.remove('ativo'); c.setAttribute('aria-selected','false'); });
-          chip.classList.add('ativo'); chip.setAttribute('aria-selected','true');
-          titulo.textContent = `Rotas disponíveis — ${chip.textContent}`;
-        });
-        if (i === hoje) { chip.classList.add('ativo'); chip.setAttribute('aria-selected','true'); }
-      });
-
-      titulo.textContent = 'Rotas disponíveis hoje';
-
-      document.getElementById('btnNovaBusca')?.addEventListener('click', () => {
-        document.querySelector('.resultados')?.scrollIntoView({behavior:'smooth'});
-      });
-    })();
-  </script>
+<!-- Script -->
+<script src="/js/storage.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/rotasService.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/app-rotas.js"></script>
 </body>
 </html>
