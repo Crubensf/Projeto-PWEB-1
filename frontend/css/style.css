@@ -92,7 +92,7 @@ body{
   padding:56px 0;
   background:
     linear-gradient(180deg, rgba(15,59,47,.75) 0%, rgba(15,59,47,.35) 55%, rgba(247,250,248,0) 100%),
-    url("/frontend/imagens/padraofundo.png");
+    url("../imagens/padraofundo.png");
   background-size:cover;
   background-position:center 35%;
   background-repeat:no-repeat;
@@ -239,6 +239,172 @@ body{
   height: 28px;
   margin-right: 8px;
 }
+
+/* ===== PAINEL - VISUAL PARECIDO COM A HOME ===== */
+
+.page-painel main.secao.suave {
+  background: var(--verde-50);
+  padding: 40px 0 56px;
+}
+
+/* topo do painel (olá, usuário) */
+.painel-topo h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem);
+  color: var(--verde-900);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.painel-topo p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* blocos viram "cards" brancos, como os da home */
+.bloco {
+  margin-top: 22px;
+  background: #fff;
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 18px 20px;
+}
+
+.bloco-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bloco-header .titulo-secao {
+  margin-bottom: 4px;
+}
+
+.bloco-header .texto-apoio {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.mensagem-vazia {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* listas de itens (passagens, rotas, viagens) */
+.lista {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+/* card de item individual */
+.item-card {
+  background: #f7faf8;
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid #d7e6de;
+}
+
+.item-card .info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-card .info strong {
+  font-size: 0.98rem;
+  color: var(--verde-900);
+}
+
+.item-card .info span {
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+/* status com pill bonitinho */
+.status {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ativo {
+  background: #e6f6ef;
+  color: #0f724f;
+}
+
+.concluida {
+  background: #edf2f7;
+  color: #607d8b;
+}
+
+/* bloco de visão geral do motorista (cards de resumo) */
+.bloco-resumo {
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.resumo-grid {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.card-resumo {
+  background: #fff;
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 14px 16px;
+}
+
+.card-resumo .label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.card-resumo strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.35rem;
+  color: var(--verde-900);
+}
+
+/* grid mais bonito em telas maiores */
+@media (min-width: 768px) {
+  .resumo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* botão "Cadastrar nova rota" alinhado com o restante */
+.bloco-header .botao.botao-primario {
+  white-space: nowrap;
+}
+
+/* reforço para o botão Sair ficar seguindo o mesmo estilo do header */
+#btn-sair.botao-invertido {
+  border-radius: 12px;
+  border: 1px solid var(--verde-700);
+  background: #fff;
+  color: var(--verde-900);
+}
+#btn-sair.botao-invertido:hover {
+  background: var(--verde-50);
+}
+
 
 
 

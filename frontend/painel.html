@@ -5,29 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Van Já • Painel</title>
 
-  <!-- painel.html está dentro de "front end", então o caminho é esse mesmo -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="page-painel">
 
-  <!-- HEADER IGUAL AO DAS OUTRAS PÁGINAS -->
-  <header class="cabecalho-site">
+  <!-- HEADER PARA USUÁRIO LOGADO -->
+  <header class="cabecalho-site" role="banner">
     <div class="caixa caixa--header">
       <div class="linha-cabecalho">
 
-        <a href="index.html" class="marca">
+        <a href="index.html" class="marca" aria-label="Van Já — Página inicial">
           <img src="imagens/van.png" alt="Van Já" class="icone-van">
           <span>Van Já</span>
         </a>
 
-        <nav class="navegacao">
+        <nav class="navegacao" aria-label="Navegação principal">
           <a href="rotas.html">Rotas</a>
-          <a href="#">Ajuda</a>
+          <a href="#ajuda-painel">Ajuda</a>
         </nav>
 
         <div class="acoes-header">
-          <a href="login.html" class="botao botao-invertido">Login</a>
-          <a href="cadastrar.html" class="botao botao-primario">Cadastrar</a>
+          <button type="button" class="botao botao-invertido" id="btn-sair">
+            Sair
+          </button>
         </div>
 
       </div>
@@ -35,92 +35,135 @@
   </header>
 
   <!-- CONTEÚDO DO PAINEL -->
-  <main class="secao suave">
-    <section class="caixa">
+  <main class="secao suave" role="main">
+    <section class="caixa" aria-labelledby="titulo-painel">
 
       <div class="painel-topo">
-        <h1>Olá, <span id="nome-usuario">Usuário</span></h1>
-        <p id="texto-tipo-usuario">Aqui você acompanha suas viagens e rotas.</p>
+        <h1 id="titulo-painel">
+          Olá, <span id="nome-usuario">Usuário</span>
+        </h1>
+        <p id="texto-tipo-usuario">
+          Aqui você acompanha suas viagens e rotas.
+        </p>
       </div>
 
-      <!-- BLOCO PASSAGEIRO -->
-      <section id="bloco-passageiro">
+      <!-- ================= PASSAGEIRO ================= -->
+      <section id="bloco-passageiro" aria-labelledby="titulo-passageiro" style="display: none;">
 
-        <h2 class="titulo-secao">Minhas passagens</h2>
+        <h2 id="titulo-passageiro" class="titulo-secao">Minhas passagens</h2>
 
-        <div class="bloco">
-          <h3>Próximas viagens</h3>
+        <!-- Próximas viagens -->
+        <section class="bloco" aria-labelledby="titulo-proximas-viagens">
+          <h3 id="titulo-proximas-viagens">Próximas viagens</h3>
 
-          <div class="lista">
-            <div class="item-card">
-              <div class="info">
-                <strong>Picos → UFPI</strong>
-                <small>10/12/2025 às 07:30</small>
-              </div>
-              <div class="status ativo">Ativa</div>
-            </div>
+          <div class="lista" id="lista-proximas-viagens">
+            <!-- preenchido via JS -->
           </div>
-        </div>
 
-        <div class="bloco">
-          <h3>Histórico</h3>
+          <p class="mensagem-vazia" id="msg-sem-proximas">
+            Você ainda não possui viagens futuras.
+          </p>
+        </section>
 
-          <div class="lista">
-            <div class="item-card">
-              <div class="info">
-                <strong>Picos → Teresina</strong>
-                <small>20/11/2025 às 06:00</small>
-              </div>
-              <div class="status concluida">Concluída</div>
-            </div>
+        <!-- Histórico -->
+        <section class="bloco" aria-labelledby="titulo-historico-viagens">
+          <h3 id="titulo-historico-viagens">Histórico</h3>
+
+          <div class="lista" id="lista-historico-viagens">
+            <!-- preenchido via JS -->
           </div>
-        </div>
+
+          <p class="mensagem-vazia" id="msg-sem-historico">
+            Você ainda não possui viagens no histórico.
+          </p>
+        </section>
 
       </section>
 
-      <!-- BLOCO MOTORISTA -->
-      <section id="bloco-motorista">
+      <!-- ================= MOTORISTA ================= -->
+      <section id="bloco-motorista" aria-labelledby="titulo-motorista" style="display: none;">
 
-        <h2 class="titulo-secao">Minhas rotas</h2>
+        <h2 id="titulo-motorista" class="titulo-secao">
+          Painel do motorista
+        </h2>
 
-        <div class="lista">
-          <div class="item-card">
-            <div class="info">
-              <strong>Picos → UFPI</strong>
-              <small>10/12/2025 às 07:30</small>
-              <small>Vagas: 10</small>
+        <!-- Resumo rápido -->
+        <section class="bloco bloco-resumo" aria-label="Resumo geral de hoje">
+          <h3 class="titulo-secao">Visão geral</h3>
+          <div class="resumo-grid">
+            <div class="card-resumo">
+              <span class="label">Rotas ativas</span>
+              <strong id="qtd-rotas-ativas">0</strong>
             </div>
-            <div class="status ativo">6 reservas</div>
+            <div class="card-resumo">
+              <span class="label">Viagens hoje</span>
+              <strong id="qtd-viagens-hoje">0</strong>
+            </div>
+            <div class="card-resumo">
+              <span class="label">Alunos hoje</span>
+              <strong id="qtd-alunos-hoje">0</strong>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <!-- Minhas rotas -->
+        <section class="bloco" aria-labelledby="titulo-minhas-rotas">
+          <header class="bloco-header">
+            <div>
+              <h3 id="titulo-minhas-rotas" class="titulo-secao">Minhas rotas</h3>
+              <p class="texto-apoio">
+                Cadastre suas rotas e acompanhe as reservas realizadas pelos alunos.
+              </p>
+            </div>
+            <a href="cadastroRotas.html" class="botao botao-primario">
+              Cadastrar nova rota
+            </a>
+          </header>
+
+          <div class="lista" id="lista-rotas-motorista">
+            <!-- preenchido via JS -->
+          </div>
+
+          <p class="mensagem-vazia" id="msg-sem-rotas">
+            Você ainda não cadastrou nenhuma rota.
+          </p>
+        </section>
+
+        <!-- Viagens por dia -->
+        <section class="bloco" aria-labelledby="titulo-viagens-dia">
+          <header class="bloco-header">
+            <div>
+              <h3 id="titulo-viagens-dia" class="titulo-secao">Viagens por dia</h3>
+              <p class="texto-apoio">
+                Escolha uma data para ver as viagens e reservas dessa rota.
+              </p>
+            </div>
+            <div class="filtro-data">
+              <label for="filtro-data">Data:</label>
+              <input type="date" id="filtro-data" name="data-viagens">
+            </div>
+          </header>
+
+          <div class="lista" id="lista-viagens-dia">
+            <!-- preenchido via JS -->
+          </div>
+
+          <p class="mensagem-vazia" id="msg-sem-viagens-dia">
+            Selecione uma data para visualizar as viagens.
+          </p>
+        </section>
 
       </section>
+
+      <!-- Âncora para o link Ajuda no header -->
+      <div id="ajuda-painel" class="oculto-visualmente">
+        Seção de ajuda do painel (conteúdo a ser implementado).
+      </div>
 
     </section>
   </main>
 
-  <script>
-    // só pra testar: depois você troca isso por dados reais / localStorage
-    const tipoUsuario = "passageiro"; // ou "motorista"
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const nomeSpan = document.getElementById("nome-usuario");
-      const textoTipo = document.getElementById("texto-tipo-usuario");
-      const blocoPassageiro = document.getElementById("bloco-passageiro");
-      const blocoMotorista = document.getElementById("bloco-motorista");
-
-      nomeSpan.textContent = "Usuário";
-
-      if (tipoUsuario === "passageiro") {
-        textoTipo.textContent = "Aqui você vê suas passagens ativas e o histórico de viagens.";
-        blocoPassageiro.style.display = "block";
-        blocoMotorista.style.display = "none";
-      } else {
-        textoTipo.textContent = "Aqui você vê as rotas que cadastrou e quantas reservas cada uma possui.";
-        blocoPassageiro.style.display = "none";
-        blocoMotorista.style.display = "block";
-      }
-    });
-  </script>
+  <!-- Agora quem cuida do painel é o initPainel() do app.js -->
+  <script src="js/app.js"></script>
 </body>
 </html>

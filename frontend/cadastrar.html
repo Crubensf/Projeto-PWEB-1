@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cadastro • Van Já</title>
 
+  <!-- Fonte -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/cadastrar.css">
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cadastrar.css">
 </head>
 <body class="cadastro-bg">
   <main class="cadastro-container" role="main">
@@ -18,12 +20,15 @@
 
     <section class="cadastro-card" aria-labelledby="titulo-cadastro">
       <header class="cadastro-card-header">
-        <img class="cadastro-logo" src="./imagens/van.png" alt="Van Já" />
+        <img class="cadastro-logo" src="imagens/van.png" alt="Van Já" />
         <h1 id="titulo-cadastro">Crie sua conta</h1>
-        <p class="cadastro-sub">Leva menos de um minuto. Depois, você já pode ver e reservar rotas.</p>
+        <p class="cadastro-sub">
+          Leva menos de um minuto. Depois, você já pode ver e reservar rotas.
+        </p>
       </header>
 
-      <form class="cadastro-form" action="/usuarios" method="post" enctype="multipart/form-data" novalidate>
+      <!-- action agora é "#" porque o envio real é feito via JS (fetch para /api/auth/register) -->
+      <form class="cadastro-form" action="#" method="post" enctype="multipart/form-data" novalidate>
         <div class="cadastro-campo">
           <label for="nome">Nome completo</label>
           <input id="nome" name="nome" type="text" placeholder="Seu nome" autocomplete="name" required>
@@ -46,7 +51,9 @@
           <label for="confirmar">Confirmar senha</label>
           <input id="confirmar" name="confirmar" type="password" placeholder="Repita sua senha" autocomplete="new-password" minlength="6" required>
           <small class="msg-erro" aria-live="polite"></small>
-          <small class="ajuda-senha">Use pelo menos 6 caracteres. Combine letras e números para mais segurança.</small>
+          <small class="ajuda-senha">
+            Use pelo menos 6 caracteres. Combine letras e números para mais segurança.
+          </small>
         </div>
 
         <div class="cadastro-campo">
@@ -86,11 +93,18 @@
         <div class="cadastro-termos">
           <label class="check">
             <input type="checkbox" id="aceite" name="aceite" required>
-            <span>Li e aceito os <a class="link" href="/termos" target="_blank" rel="noopener">Termos de Uso</a> e a <a class="link" href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.</span>
+            <span>
+              Li e aceito os
+              <a class="link" href="/termos" target="_blank" rel="noopener">Termos de Uso</a>
+              e a
+              <a class="link" href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.
+            </span>
           </label>
         </div>
 
-        <button class="botao botao-primario botao-cadastrar" type="submit">Criar conta</button>
+        <button class="botao botao-primario botao-cadastrar" type="submit">
+          Criar conta
+        </button>
 
         <p class="ja-tem">
           Já tem conta? <a class="link" href="login.html">Entrar</a>
@@ -99,8 +113,7 @@
     </section>
   </main>
 
-  <script src="./js/storage.js"></script>
-  <script src="./js/auth.js"></script>
-  <script src="./js/app-cadastrar.js"></script>
+  <!-- JS principal do front -->
+  <script src="js/app.js"></script>
 </body>
 </html>
