@@ -92,7 +92,7 @@ body{
   padding:56px 0;
   background:
     linear-gradient(180deg, rgba(15,59,47,.75) 0%, rgba(15,59,47,.35) 55%, rgba(247,250,248,0) 100%),
-    url("imagens/padraofundo.png");
+    url("/frontend/imagens/padraofundo.png");
   background-size:cover;
   background-position:center 35%;
   background-repeat:no-repeat;
@@ -179,6 +179,68 @@ body{
 
 
 .rodape-site{background:var(--verde-900);color:#fff;padding:20px 0;text-align:center}
+
+/* ===== PAINEL ===== */
+
+.painel-topo {
+  margin-bottom: 24px;
+}
+
+#bloco-passageiro,
+#bloco-motorista {
+  margin-top: 20px;
+}
+
+.bloco {
+  margin-top: 20px;
+}
+
+.lista {
+  margin-top: 10px;
+  display: grid;
+  gap: 12px;
+}
+
+.item-card {
+  background: #f7f9fb;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-card .info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ativo {
+  background: #0080601f;
+  color: #006d54;
+}
+
+.concluida {
+  background: #b6c7cc3f;
+  color: #607d8b;
+}
+
+/* Garante que a imagem da van fique alinhada */
+.logo img {
+  height: 28px;
+  margin-right: 8px;
+}
+
+
 
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

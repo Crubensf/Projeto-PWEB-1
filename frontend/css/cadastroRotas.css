@@ -1,4 +1,11 @@
-:root { color-scheme: light; }
+:root {
+  color-scheme: light;
+  --verde-900: #022c22;
+  --verde-700: #047857;
+  --texto: #020617;
+  --muted: #6b7280;
+}
+
 body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial; }
 .rotas-bg {
   min-height: 100dvh;
@@ -84,8 +91,8 @@ body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
 .btn { border: none; border-radius: 999px; padding: 10px 14px; font-weight: 800; letter-spacing: .02em; cursor: pointer; }
 .btn-primario { background: var(--verde-700); color: #fff; box-shadow: 0 10px 18px rgba(23,106,83,.22); }
 .btn-primario:hover { filter: brightness(.97); }
-.btn-secundario { background: #ecfdf5; color: var(--verde-700); border: 1px solid rgba(23,106,83,.35); }
-.btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.btn-secundario { background: #e7f6e6; color: var(--verde-700); border: 1px solid rgba(23,106,83,.35); }
+.btn-danger { background: #e7f6e6; color: #b91c1c; border: 1px solid #fecaca; }
 
 .parada-item { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: center; }
 @media (max-width: 640px){ .parada-item { grid-template-columns: 1fr; } }

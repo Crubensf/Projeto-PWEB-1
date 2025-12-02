@@ -5,13 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cadastro • Van Já</title>
 
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/cadastrar.css">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/cadastrar.css">
 </head>
 <body class="cadastro-bg">
   <main class="cadastro-container" role="main">
@@ -19,35 +18,30 @@
 
     <section class="cadastro-card" aria-labelledby="titulo-cadastro">
       <header class="cadastro-card-header">
-        <img class="cadastro-logo" src="imagens/van.png" alt="Van Já" />
+        <img class="cadastro-logo" src="./imagens/van.png" alt="Van Já" />
         <h1 id="titulo-cadastro">Crie sua conta</h1>
         <p class="cadastro-sub">Leva menos de um minuto. Depois, você já pode ver e reservar rotas.</p>
       </header>
 
-      
       <form class="cadastro-form" action="/usuarios" method="post" enctype="multipart/form-data" novalidate>
-       
         <div class="cadastro-campo">
           <label for="nome">Nome completo</label>
           <input id="nome" name="nome" type="text" placeholder="Seu nome" autocomplete="name" required>
           <small class="msg-erro" aria-live="polite"></small>
         </div>
 
-        
         <div class="cadastro-campo">
           <label for="email">E-mail</label>
           <input id="email" name="email" type="email" inputmode="email" placeholder="exemplo@email.com" autocomplete="email" required>
           <small class="msg-erro" aria-live="polite"></small>
         </div>
 
-        
         <div class="cadastro-campo">
           <label for="senha">Senha</label>
           <input id="senha" name="senha" type="password" placeholder="••••••••" autocomplete="new-password" minlength="6" required>
           <small class="msg-erro" aria-live="polite"></small>
         </div>
 
-        
         <div class="cadastro-campo">
           <label for="confirmar">Confirmar senha</label>
           <input id="confirmar" name="confirmar" type="password" placeholder="Repita sua senha" autocomplete="new-password" minlength="6" required>
@@ -55,7 +49,6 @@
           <small class="ajuda-senha">Use pelo menos 6 caracteres. Combine letras e números para mais segurança.</small>
         </div>
 
-        
         <div class="cadastro-campo">
           <label for="perfil">Você é</label>
           <select id="perfil" name="perfil" autocomplete="off" required>
@@ -66,13 +59,12 @@
           <small class="msg-erro" aria-live="polite"></small>
         </div>
 
-        
         <fieldset id="dados-motorista" class="cadastro-extra" style="display:none" aria-live="polite">
           <legend>Dados do motorista</legend>
 
           <div class="cadastro-campo">
             <label for="cnh">Número da CNH (11 dígitos)</label>
-            <input id="cnh" name="cnh" type="text" inputmode="numeric" pattern="\\d{11}" maxlength="11" placeholder="Somente números">
+            <input id="cnh" name="cnh" type="text" inputmode="numeric" pattern="\d{11}" maxlength="11" placeholder="Somente números">
             <small class="msg-erro" aria-live="polite"></small>
           </div>
 
@@ -106,9 +98,9 @@
       </form>
     </section>
   </main>
-<!-- Script -->
-<script src="/js/storage.js"></script>
-<script src="/js/auth.js"></script>
-<script src="/js/app-cadastrar.js"></script>
+
+  <script src="./js/storage.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/app-cadastrar.js"></script>
 </body>
 </html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Van Já • Painel</title>
+
+  <!-- painel.html está dentro de "front end", então o caminho é esse mesmo -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- HEADER IGUAL AO DAS OUTRAS PÁGINAS -->
+  <header class="cabecalho-site">
+    <div class="caixa caixa--header">
+      <div class="linha-cabecalho">
+
+        <a href="index.html" class="marca">
+          <img src="imagens/van.png" alt="Van Já" class="icone-van">
+          <span>Van Já</span>
+        </a>
+
+        <nav class="navegacao">
+          <a href="rotas.html">Rotas</a>
+          <a href="#">Ajuda</a>
+        </nav>
+
+        <div class="acoes-header">
+          <a href="login.html" class="botao botao-invertido">Login</a>
+          <a href="cadastrar.html" class="botao botao-primario">Cadastrar</a>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO DO PAINEL -->
+  <main class="secao suave">
+    <section class="caixa">
+
+      <div class="painel-topo">
+        <h1>Olá, <span id="nome-usuario">Usuário</span></h1>
+        <p id="texto-tipo-usuario">Aqui você acompanha suas viagens e rotas.</p>
+      </div>
+
+      <!-- BLOCO PASSAGEIRO -->
+      <section id="bloco-passageiro">
+
+        <h2 class="titulo-secao">Minhas passagens</h2>
+
+        <div class="bloco">
+          <h3>Próximas viagens</h3>
+
+          <div class="lista">
+            <div class="item-card">
+              <div class="info">
+                <strong>Picos → UFPI</strong>
+                <small>10/12/2025 às 07:30</small>
+              </div>
+              <div class="status ativo">Ativa</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bloco">
+          <h3>Histórico</h3>
+
+          <div class="lista">
+            <div class="item-card">
+              <div class="info">
+                <strong>Picos → Teresina</strong>
+                <small>20/11/2025 às 06:00</small>
+              </div>
+              <div class="status concluida">Concluída</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- BLOCO MOTORISTA -->
+      <section id="bloco-motorista">
+
+        <h2 class="titulo-secao">Minhas rotas</h2>
+
+        <div class="lista">
+          <div class="item-card">
+            <div class="info">
+              <strong>Picos → UFPI</strong>
+              <small>10/12/2025 às 07:30</small>
+              <small>Vagas: 10</small>
+            </div>
+            <div class="status ativo">6 reservas</div>
+          </div>
+        </div>
+
+      </section>
+
+    </section>
+  </main>
+
+  <script>
+    // só pra testar: depois você troca isso por dados reais / localStorage
+    const tipoUsuario = "passageiro"; // ou "motorista"
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const nomeSpan = document.getElementById("nome-usuario");
+      const textoTipo = document.getElementById("texto-tipo-usuario");
+      const blocoPassageiro = document.getElementById("bloco-passageiro");
+      const blocoMotorista = document.getElementById("bloco-motorista");
+
+      nomeSpan.textContent = "Usuário";
+
+      if (tipoUsuario === "passageiro") {
+        textoTipo.textContent = "Aqui você vê suas passagens ativas e o histórico de viagens.";
+        blocoPassageiro.style.display = "block";
+        blocoMotorista.style.display = "none";
+      } else {
+        textoTipo.textContent = "Aqui você vê as rotas que cadastrou e quantas reservas cada uma possui.";
+        blocoPassageiro.style.display = "none";
+        blocoMotorista.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
