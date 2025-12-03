@@ -5,7 +5,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime, timedelta, date
 
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey, Date, DateTime, Float
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Date, DateTime, Float
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship, Session
 
 from passlib.context import CryptContext
@@ -29,6 +29,31 @@ ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
+# =========================
+# CORS
+# =========================
+
+origins = [
+    "http://127.0.0.1:5500",
+    "http://127.0.0.1:5501",
+    "http://localhost:5500",
+    "http://localhost:5501",
+]
+
+app = FastAPI(title="Van Já API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# =========================
+# HELPERS
+# =========================
 
 def get_db():
     db = SessionLocal()
@@ -50,8 +75,7 @@ def create_access_token(sub: str, expires_delta: Optional[timedelta] = None):
     to_encode = {"sub": sub}
     expire = datetime.utcnow() + (expires_delta or timedelta(hours=8))
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def get_usuario_from_token(
@@ -63,6 +87,7 @@ def get_usuario_from_token(
         detail="Não autenticado",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: Optional[str] = payload.get("sub")
@@ -74,24 +99,25 @@ def get_usuario_from_token(
     user = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
     if user is None:
         raise cred_exc
+
     return user
 
 
-def get_motorista(user = Depends(get_usuario_from_token)):
+def get_motorista(user=Depends(get_usuario_from_token)):
     if user.perfil != "motorista":
         raise HTTPException(status_code=403, detail="Apenas motoristas")
     return user
 
 
-def get_estudante(user = Depends(get_usuario_from_token)):
+def get_estudante(user=Depends(get_usuario_from_token)):
     if user.perfil != "estudante":
         raise HTTPException(status_code=403, detail="Apenas estudantes")
     return user
 
 
-# ============
+# =========================
 # MODELOS DB
-# ============
+# =========================
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -100,7 +126,7 @@ class Usuario(Base):
     nome = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     senha_hash = Column(String, nullable=False)
-    perfil = Column(String, nullable=False)  # estudante | motorista
+    perfil = Column(String, nullable=False)
 
     cnh = Column(String, nullable=True)
     cnh_imagem_path = Column(String, nullable=True)
@@ -126,7 +152,7 @@ class Rota(Base):
     vagas = Column(Integer, nullable=False)
     veiculo = Column(String, nullable=True)
 
-    dias_semana = Column(String, nullable=False)  # "segunda,terça,quarta"
+    dias_semana = Column(String, nullable=False)
     preco = Column(Float, nullable=False)
     imagem_path = Column(String, nullable=True)
 
@@ -144,7 +170,7 @@ class Viagem(Base):
     passageiro_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
 
     data = Column(Date, nullable=False)
-    status = Column(String, default="reservada")  # reservada, concluida, cancelada
+    status = Column(String, default="reservada")
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -152,19 +178,14 @@ class Viagem(Base):
     passageiro = relationship("Usuario", back_populates="viagens")
 
 
-# ============
+# =========================
 # SCHEMAS API
-# ============
+# =========================
 
 class UsuarioBase(BaseModel):
     nome: str
     email: EmailStr
-    perfil: str  # estudante | motorista
-
-
-class UsuarioCreate(UsuarioBase):
-    senha: str
-    cnh: Optional[str] = None
+    perfil: str
 
 
 class UsuarioOut(UsuarioBase):
@@ -175,6 +196,11 @@ class UsuarioOut(UsuarioBase):
         from_attributes = True
 
 
+class UsuarioCreate(UsuarioBase):
+    senha: str
+    cnh: Optional[str] = None
+
+
 class LoginData(BaseModel):
     email: EmailStr
     senha: str
@@ -182,7 +208,6 @@ class LoginData(BaseModel):
 
 class Token(BaseModel):
     access_token: str
-    token_type: str = "bearer"
     usuario: UsuarioOut
 
 
@@ -210,13 +235,9 @@ class RotaOut(RotaBase):
         from_attributes = True
 
 
-class ViagemBase(BaseModel):
+class ViagemCreate(BaseModel):
     rota_id: int
     data: date
-
-
-class ViagemCreate(ViagemBase):
-    pass
 
 
 class ViagemOut(BaseModel):
@@ -225,9 +246,6 @@ class ViagemOut(BaseModel):
     data: date
     status: str
 
-    class Config:
-        from_attributes = True
-
 
 class MotoristaResumo(BaseModel):
     rotas_ativas: int
@@ -235,38 +253,57 @@ class MotoristaResumo(BaseModel):
     alunos_hoje: int
 
 
-# ============
-# APP FASTAPI
-# ============
+# =========================
+# HELPERS DE CONVERSÃO
+# =========================
+
+def rota_to_out(r: Rota) -> RotaOut:
+    return RotaOut(
+        id=r.id,
+        motorista_id=r.motorista_id,
+        nome=r.nome,
+        origem=r.origem,
+        destino=r.destino,
+        hora_ida=r.hora_ida,
+        hora_volta=r.hora_volta,
+        vagas=r.vagas,
+        veiculo=r.veiculo,
+        dias_semana=r.dias_semana.split(","),
+        preco=r.preco,
+    )
+
+
+def viagem_to_out(v: Viagem) -> ViagemOut:
+    r = v.rota
+    rota_out = rota_to_out(r)
+    return ViagemOut(
+        id=v.id,
+        rota=rota_out,
+        data=v.data,
+        status=v.status,
+    )
+
+
+# =========================
+# INICIALIZA DB
+# =========================
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Van Já API (simples)")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # depois você pode restringir pro domínio do front
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ============
+# =========================
 # ROTAS AUTH
-# ============
+# =========================
 
 @app.post("/api/auth/register", response_model=Token)
 async def registrar_usuario(
     nome: str = Form(...),
     email: EmailStr = Form(...),
     senha: str = Form(...),
-    perfil: str = Form(...),  # estudante | motorista
+    perfil: str = Form(...),
     cnh: Optional[str] = Form(None),
-    cnh_imagem: Optional[UploadFile] = File(None),
-    doc_veiculo_imagem: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
-    # já existe?
     if db.query(Usuario).filter(Usuario.email == email).first():
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
 
@@ -282,37 +319,30 @@ async def registrar_usuario(
     db.commit()
     db.refresh(user)
 
-    # aqui você poderia salvar as imagens em disco
-    # e atualizar user.cnh_imagem_path / user.doc_veiculo_imagem_path
-
-    access_token = create_access_token(sub=str(user.id))
-    usuario_out = UsuarioOut.from_orm(user)
-    return Token(access_token=access_token, usuario=usuario_out)
+    token = create_access_token(sub=str(user.id))
+    return Token(access_token=token, usuario=UsuarioOut.from_orm(user))
 
 
 @app.post("/api/auth/login", response_model=Token)
 def login(data: LoginData, db: Session = Depends(get_db)):
     user = db.query(Usuario).filter(Usuario.email == data.email).first()
+
     if not user or not verify_password(data.senha, user.senha_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciais inválidas",
-        )
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
-    access_token = create_access_token(sub=str(user.id))
-    usuario_out = UsuarioOut.from_orm(user)
-    return Token(access_token=access_token, usuario=usuario_out)
+    token = create_access_token(sub=str(user.id))
+    return Token(access_token=token, usuario=UsuarioOut.from_orm(user))
 
 
-# ============
-# ROTAS – GERAL
-# ============
+# =========================
+# ROTAS GERAIS
+# =========================
 
 @app.get("/api/rotas", response_model=List[RotaOut])
 def listar_rotas(
-    origem: Optional[str] = Query(None),
-    destino: Optional[str] = Query(None),
-    dia: Optional[str] = Query(None),
+    origem: Optional[str] = None,
+    destino: Optional[str] = None,
+    dia: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
     q = db.query(Rota)
@@ -322,16 +352,14 @@ def listar_rotas(
     if destino:
         q = q.filter(Rota.destino.ilike(f"%{destino}%"))
     if dia:
-        like = f"%{dia.lower()}%"
-        q = q.filter(Rota.dias_semana.ilike(like))
+        q = q.filter(Rota.dias_semana.ilike(f"%{dia}%"))
 
-    rotas = q.all()
-    return rotas
+    return [rota_to_out(r) for r in q.all()]
 
 
-# ============
-# ROTAS – MOTORISTA
-# ============
+# =========================
+# ROTAS MOTORISTA
+# =========================
 
 @app.post("/api/motorista/rotas", response_model=RotaOut)
 def criar_rota(
@@ -357,7 +385,8 @@ def criar_rota(
     db.add(r)
     db.commit()
     db.refresh(r)
-    return r
+
+    return rota_to_out(r)
 
 
 @app.get("/api/motorista/minhas-rotas", response_model=List[RotaOut])
@@ -366,7 +395,28 @@ def minhas_rotas(
     motorista: Usuario = Depends(get_motorista),
 ):
     rotas = db.query(Rota).filter(Rota.motorista_id == motorista.id).all()
-    return rotas
+    return [rota_to_out(r) for r in rotas]
+
+
+@app.delete("/api/motorista/rotas/{rota_id}", status_code=204)
+def deletar_rota(
+    rota_id: int,
+    db: Session = Depends(get_db),
+    motorista: Usuario = Depends(get_motorista),
+):
+    rota = db.query(Rota).filter(
+        Rota.id == rota_id,
+        Rota.motorista_id == motorista.id
+    ).first()
+
+    if not rota:
+        raise HTTPException(status_code=404, detail="Rota não encontrada")
+
+    # apaga viagens ligadas à rota
+    db.query(Viagem).filter(Viagem.rota_id == rota.id).delete()
+    db.delete(rota)
+    db.commit()
+    # 204 → sem conteúdo
 
 
 @app.get("/api/motorista/resumo", response_model=MotoristaResumo)
@@ -376,22 +426,19 @@ def resumo_motorista(
 ):
     hoje = date.today()
 
-    rotas_ativas = db.query(Rota).filter(Rota.motorista_id == motorista.id).count()
+    rotas_ativas = db.query(Rota).filter(
+        Rota.motorista_id == motorista.id
+    ).count()
 
-    viagens_hoje = (
-        db.query(Viagem)
-        .join(Rota)
-        .filter(Rota.motorista_id == motorista.id, Viagem.data == hoje)
-        .count()
-    )
+    viagens_hoje = db.query(Viagem).join(Rota).filter(
+        Rota.motorista_id == motorista.id,
+        Viagem.data == hoje
+    ).count()
 
-    alunos_hoje = (
-        db.query(Viagem.passageiro_id)
-        .join(Rota)
-        .filter(Rota.motorista_id == motorista.id, Viagem.data == hoje)
-        .distinct()
-        .count()
-    )
+    alunos_hoje = db.query(Viagem.passageiro_id).join(Rota).filter(
+        Rota.motorista_id == motorista.id,
+        Viagem.data == hoje
+    ).distinct().count()
 
     return MotoristaResumo(
         rotas_ativas=rotas_ativas,
@@ -400,83 +447,61 @@ def resumo_motorista(
     )
 
 
-@app.get("/api/motorista/viagens")
-def viagens_por_dia(
-    data: date,
+@app.get("/api/motorista/viagens", response_model=List[ViagemOut])
+def viagens_motorista(
+    data_ref: Optional[date] = Query(None, alias="data"),
     db: Session = Depends(get_db),
     motorista: Usuario = Depends(get_motorista),
 ):
-    viagens = (
-        db.query(Viagem)
-        .join(Rota)
-        .filter(Rota.motorista_id == motorista.id, Viagem.data == data)
-        .all()
-    )
-    # aqui você pode depois criar um schema específico
-    return viagens
+    """
+    Lista viagens de rotas do motorista.
+    Se 'data' for informado, filtra por essa data.
+    """
+    q = db.query(Viagem).join(Rota).filter(Rota.motorista_id == motorista.id)
+
+    if data_ref:
+        q = q.filter(Viagem.data == data_ref)
+
+    q = q.order_by(Viagem.data.asc())
+
+    viagens = q.all()
+    return [viagem_to_out(v) for v in viagens]
 
 
-# ============
-# ROTAS – PASSAGEIRO
-# ============
+# =========================
+# ROTAS PASSAGEIRO
+# =========================
 
 @app.post("/api/passageiro/viagens", response_model=ViagemOut)
 def reservar_viagem(
-    data: ViagemCreate,
+    data_in: ViagemCreate,
     db: Session = Depends(get_db),
     estudante: Usuario = Depends(get_estudante),
 ):
-    rota = db.query(Rota).filter(Rota.id == data.rota_id).first()
+    rota = db.query(Rota).filter(Rota.id == data_in.rota_id).first()
     if not rota:
         raise HTTPException(status_code=404, detail="Rota não encontrada")
 
-    reservas = (
-        db.query(Viagem)
-        .filter(
-            Viagem.rota_id == rota.id,
-            Viagem.data == data.data,
-            Viagem.status != "cancelada",
-        )
-        .count()
-    )
+    reservas = db.query(Viagem).filter(
+        Viagem.rota_id == rota.id,
+        Viagem.data == data_in.data,
+        Viagem.status != "cancelada"
+    ).count()
 
     if reservas >= rota.vagas:
-        raise HTTPException(
-            status_code=400, detail="Não há vagas disponíveis para esta data"
-        )
+        raise HTTPException(status_code=400, detail="Não há vagas disponíveis")
 
     v = Viagem(
         rota_id=rota.id,
         passageiro_id=estudante.id,
-        data=data.data,
-        status="reservada",
+        data=data_in.data
     )
 
     db.add(v)
     db.commit()
     db.refresh(v)
 
-    # precisa embrulhar rota dentro de ViagemOut
-    rota_out = RotaOut(
-        id=rota.id,
-        motorista_id=rota.motorista_id,
-        nome=rota.nome,
-        origem=rota.origem,
-        destino=rota.destino,
-        hora_ida=rota.hora_ida,
-        hora_volta=rota.hora_volta,
-        vagas=rota.vagas,
-        veiculo=rota.veiculo,
-        dias_semana=rota.dias_semana.split(","),
-        preco=rota.preco,
-    )
-
-    return ViagemOut(
-        id=v.id,
-        rota=rota_out,
-        data=v.data,
-        status=v.status,
-    )
+    return viagem_to_out(v)
 
 
 @app.get("/api/passageiro/viagens/proximas", response_model=List[ViagemOut])
@@ -485,39 +510,15 @@ def viagens_proximas(
     estudante: Usuario = Depends(get_estudante),
 ):
     hoje = date.today()
-    viagens = (
-        db.query(Viagem)
-        .join(Rota)
-        .filter(
-            Viagem.passageiro_id == estudante.id,
-            Viagem.data >= hoje,
-            Viagem.status != "cancelada",
-        )
-        .order_by(Viagem.data.asc())
-        .all()
-    )
 
-    result: List[ViagemOut] = []
-    for v in viagens:
-        rota = v.rota
-        rota_out = RotaOut(
-            id=rota.id,
-            motorista_id=rota.motorista_id,
-            nome=rota.nome,
-            origem=rota.origem,
-            destino=rota.destino,
-            hora_ida=rota.hora_ida,
-            hora_volta=rota.hora_volta,
-            vagas=rota.vagas,
-            veiculo=rota.veiculo,
-            dias_semana=rota.dias_semana.split(","),
-            preco=rota.preco,
-        )
-        result.append(
-            ViagemOut(id=v.id, rota=rota_out, data=v.data, status=v.status)
-        )
+    q = db.query(Viagem).join(Rota).filter(
+        Viagem.passageiro_id == estudante.id,
+        Viagem.data >= hoje,
+        Viagem.status != "cancelada"
+    ).order_by(Viagem.data.asc())
 
-    return result
+    viagens = q.all()
+    return [viagem_to_out(v) for v in viagens]
 
 
 @app.get("/api/passageiro/viagens/historico", response_model=List[ViagemOut])
@@ -526,44 +527,20 @@ def viagens_historico(
     estudante: Usuario = Depends(get_estudante),
 ):
     hoje = date.today()
-    viagens = (
-        db.query(Viagem)
-        .join(Rota)
-        .filter(
-            Viagem.passageiro_id == estudante.id,
-            Viagem.data < hoje,
-        )
-        .order_by(Viagem.data.desc())
-        .all()
-    )
 
-    result: List[ViagemOut] = []
-    for v in viagens:
-        rota = v.rota
-        rota_out = RotaOut(
-            id=rota.id,
-            motorista_id=rota.motorista_id,
-            nome=rota.nome,
-            origem=rota.origem,
-            destino=rota.destino,
-            hora_ida=rota.hora_ida,
-            hora_volta=rota.hora_volta,
-            vagas=rota.vagas,
-            veiculo=rota.veiculo,
-            dias_semana=rota.dias_semana.split(","),
-            preco=rota.preco,
-        )
-        result.append(
-            ViagemOut(id=v.id, rota=rota_out, data=v.data, status=v.status)
-        )
+    q = db.query(Viagem).join(Rota).filter(
+        Viagem.passageiro_id == estudante.id,
+        Viagem.data < hoje
+    ).order_by(Viagem.data.desc())
 
-    return result
+    viagens = q.all()
+    return [viagem_to_out(v) for v in viagens]
 
 
-# ============
-# ROTA /ME
-# ============
+# =========================
+# UTIL
+# =========================
 
 @app.get("/api/usuarios/me", response_model=UsuarioOut)
-def me(user = Depends(get_usuario_from_token)):
-    return UsuarioOut.from_orm(user)
+def me(user=Depends(get_usuario_from_token)):
+  return UsuarioOut.from_orm(user)

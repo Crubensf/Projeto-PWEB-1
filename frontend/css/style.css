@@ -404,6 +404,15 @@ body{
 #btn-sair.botao-invertido:hover {
   background: var(--verde-50);
 }
+.btn-excluir-rota {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+}
+
+.btn-excluir-rota:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
 
 
 

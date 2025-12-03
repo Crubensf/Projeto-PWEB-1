@@ -81,6 +81,29 @@
     return `${dia}/${mes}/${ano}`;
   }
 
+  // ===================== HEADER: BOTÃO PAINEL USUÁRIO =====================
+
+  function initHeaderPainelUsuario() {
+    const btnPainel = document.getElementById('btn-painel-usuario');
+    if (!btnPainel) return; // não está nessa página
+
+    const user = getUsuario();
+
+    if (user) {
+      // usuário logado → mostra botão
+      btnPainel.style.display = 'inline-flex';
+
+      if (user.perfil === 'motorista') {
+        btnPainel.textContent = 'Painel do motorista';
+      } else {
+        btnPainel.textContent = 'Meu painel';
+      }
+    } else {
+      // ninguém logado → esconde
+      btnPainel.style.display = 'none';
+    }
+  }
+
   // ===================== HOME: ROTAS EM DESTAQUE =====================
 
   function criarCardRotaDestaque(rota) {
@@ -326,216 +349,6 @@
     });
   }
 
-  // ===================== CADASTRO DE ROTAS =====================
-
-  function initCadastroRotas() {
-    const form = document.getElementById('cadastroRotas');
-    if (!form) return;
-
-    const precoVis = document.getElementById('preco_vis');
-    const preco = document.getElementById('preco');
-    const listaParadas = document.getElementById('listaParadas');
-    const addParadaBtn = document.getElementById('addParada');
-    const imagem = document.getElementById('imagem');
-
-    const MAX_MB = 5;
-    const MAX_BYTES = MAX_MB * 1024 * 1024;
-
-    const fmt = new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
-
-    function parseBRLToNumber(text) {
-      if (!text) return 0;
-
-      const only = text
-        .replace(/[^\d,.-]/g, '')
-        .replace(/\./g, '')
-        .replace(',', '.');
-
-      const n = parseFloat(only);
-      return Number.isNaN(n) ? 0 : n;
-    }
-
-    function formatPrecoOnInput() {
-      if (!precoVis) return;
-      let val = precoVis.value;
-      val = val.replace(/[^\d]/g, '');
-
-      if (!val) {
-        precoVis.value = '';
-        if (preco) preco.value = '';
-        return;
-      }
-
-      const int = parseInt(val, 10);
-      const num = int / 100;
-
-      precoVis.value = fmt.format(num);
-      if (preco) preco.value = String(num);
-    }
-
-    function err(field, msg) {
-      const el = form.querySelector(`[data-err-for="${field}"]`);
-      if (el) el.textContent = msg || '';
-    }
-
-    function validaDias() {
-      const marcados = form.querySelectorAll('input[name="dias[]"]:checked');
-      if (marcados.length === 0) {
-        err('dias', 'Selecione ao menos um dia.');
-        return false;
-      }
-      err('dias', '');
-      return true;
-    }
-
-    function validaImagem() {
-      const f = imagem?.files && imagem.files[0];
-      if (!f) return true;
-
-      if (f.size > MAX_BYTES) {
-        alert(`Imagem muito grande. Máx: ${MAX_MB} MB.`);
-        return false;
-      }
-
-      return true;
-    }
-
-    function criaLinhaParada(nome = '', hora = '') {
-      const wrap = document.createElement('div');
-      wrap.className = 'parada-item';
-
-      wrap.innerHTML = `
-        <input
-          type="text"
-          name="paradas[][nome]"
-          placeholder="Ex.: Terminal Centro"
-          value="${nome}"
-        >
-        <input
-          type="time"
-          name="paradas[][hora]"
-          value="${hora}"
-        >
-        <button type="button" class="btn btn-danger">Remover</button>
-      `;
-
-      const btnRemover = wrap.querySelector('button');
-      btnRemover.addEventListener('click', () => wrap.remove());
-
-      return wrap;
-    }
-
-    if (precoVis) {
-      precoVis.addEventListener('input', formatPrecoOnInput);
-      precoVis.addEventListener('blur', () => {
-        if (precoVis.value) formatPrecoOnInput();
-      });
-    }
-
-    if (addParadaBtn && listaParadas) {
-      addParadaBtn.addEventListener('click', () => {
-        listaParadas.appendChild(criaLinhaParada());
-      });
-
-      // parada padrão
-      listaParadas.appendChild(
-        criaLinhaParada('Ponto de encontro', '06:50')
-      );
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const user = getUsuario();
-      if (!user || user.perfil !== 'motorista') {
-        alert(
-          'Você precisa estar logado como motorista para cadastrar rotas.'
-        );
-        location.href = 'login.html';
-        return;
-      }
-
-      let ok = true;
-
-      // limpa erros
-      ['nome', 'origem', 'destino', 'partida', 'vagas', 'preco'].forEach(
-        (f) => err(f, '')
-      );
-
-      if (!form.nome.value.trim()) {
-        err('nome', 'Informe o nome da rota.');
-        ok = false;
-      }
-      if (!form.origem.value.trim()) {
-        err('origem', 'Informe a origem.');
-        ok = false;
-      }
-      if (!form.destino.value.trim()) {
-        err('destino', 'Informe o destino.');
-        ok = false;
-      }
-      if (!form.partida.value) {
-        err('partida', 'Informe a hora de partida.');
-        ok = false;
-      }
-      if (!form.vagas.value || Number(form.vagas.value) <= 0) {
-        err('vagas', 'Informe as vagas.');
-        ok = false;
-      }
-
-      const valor = parseBRLToNumber(precoVis?.value || '');
-      if (valor <= 0) {
-        err('preco', 'Informe um preço válido.');
-        ok = false;
-      } else if (preco) {
-        preco.value = String(valor);
-      }
-
-      if (!validaDias()) ok = false;
-      if (!validaImagem()) ok = false;
-
-      if (!ok) return;
-
-      const d = new FormData(form);
-
-      const dias = Array.from(
-        form.querySelectorAll('input[name="dias[]"]:checked')
-      ).map((i) => i.value);
-
-      const rota = {
-        nome: d.get('nome') || '',
-        origem: d.get('origem') || '',
-        destino: d.get('destino') || '',
-        hora_ida: d.get('partida') || '',
-        // IMPORTANTE: o name do input é "retorno", não "volta"
-        hora_volta: d.get('retorno') || null,
-        vagas: Number(d.get('vagas') || 0),
-        veiculo: d.get('veiculo') || '',
-        dias_semana: dias,
-        preco: valor,
-      };
-
-      try {
-        await apiRequest('/api/motorista/rotas', {
-          method: 'POST',
-          body: rota,
-          auth: true,
-        });
-
-        alert('Rota salva com sucesso! Você já pode vê-la em Rotas.');
-        try {
-          form.reset();
-        } catch {}
-      } catch (err) {
-        console.error(err);
-        alert('Erro ao salvar rota: ' + err.message);
-      }
-    });
-  }
-
   // ===================== ROTAS (LISTAGEM) =====================
 
   function mapDiaLabelToKey(label) {
@@ -645,7 +458,7 @@
 
         container.insertBefore(
           artigo,
-          msgSem || null // se msgSem existir, mantém ela no final
+          msgSem || null
         );
       });
 
@@ -660,8 +473,8 @@
       try {
         const params = new URLSearchParams();
 
-        if (inputOrigem?.value) params.append('origem', inputOrigem.value);
-        if (inputDestino?.value) params.append('destino', inputDestino.value);
+        if (inputOrigem && inputOrigem.value) params.append('origem', inputOrigem.value);
+        if (inputDestino && inputDestino.value) params.append('destino', inputDestino.value);
 
         let diaLabel = '';
         const chipAtivo = document.querySelector('.chip-dia.ativo');
@@ -680,13 +493,17 @@
       }
     }
 
-    inputOrigem?.addEventListener('input', () => {
-      carregarRotas();
-    });
+    if (inputOrigem) {
+      inputOrigem.addEventListener('input', () => {
+        carregarRotas();
+      });
+    }
 
-    inputDestino?.addEventListener('input', () => {
-      carregarRotas();
-    });
+    if (inputDestino) {
+      inputDestino.addEventListener('input', () => {
+        carregarRotas();
+      });
+    }
 
     chips.forEach((chip) => {
       chip.addEventListener('click', () => {
@@ -696,14 +513,16 @@
       });
     });
 
-    btnNovaBusca?.addEventListener('click', () => {
-      carregarRotas();
-      document
-        .querySelector('.resultados')
-        ?.scrollIntoView({ behavior: 'smooth' });
-    });
+    if (btnNovaBusca) {
+      btnNovaBusca.addEventListener('click', () => {
+        carregarRotas();
+        const resultados = document.querySelector('.resultados');
+        if (resultados) {
+          resultados.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    }
 
-    // primeira carga
     carregarRotas();
   }
 
@@ -779,6 +598,14 @@
       const item = document.createElement('div');
       item.className = 'item-card';
 
+      let rotaId = null;
+      if (r.id != null) rotaId = r.id;
+      else if (r.rota_id != null) rotaId = r.rota_id;
+      else if (r._id != null) rotaId = r._id;
+      if (rotaId != null) {
+        item.dataset.rotaId = String(rotaId);
+      }
+
       const info = document.createElement('div');
       info.className = 'info';
 
@@ -805,7 +632,13 @@
       spanStatus.className = 'status ativo';
       spanStatus.textContent = 'Reservas: (em breve)';
 
+      const btnExcluir = document.createElement('button');
+      btnExcluir.type = 'button';
+      btnExcluir.className = 'botao botao-suave btn-excluir-rota';
+      btnExcluir.textContent = 'Excluir rota';
+
       info2.appendChild(spanStatus);
+      info2.appendChild(btnExcluir);
 
       item.appendChild(info);
       item.appendChild(info2);
@@ -876,6 +709,46 @@
       console.error(err);
     }
 
+    if (listaRotas) {
+      listaRotas.addEventListener('click', async function (e) {
+        const target = e.target;
+        const btn = target.closest
+          ? target.closest('.btn-excluir-rota')
+          : null;
+        if (!btn) return;
+
+        const item = btn.closest('.item-card');
+        if (!item) return;
+
+        const rotaId = item.dataset.rotaId;
+        if (!rotaId) {
+          alert('Não foi possível identificar essa rota para exclusão.');
+          return;
+        }
+
+        if (!confirm('Tem certeza que deseja excluir esta rota?')) {
+          return;
+        }
+
+        try {
+          await apiRequest('/api/motorista/rotas/' + rotaId, {
+            method: 'DELETE',
+            auth: true,
+          });
+          item.remove();
+          if (spanRotasAtivas) {
+            const atual = parseInt(spanRotasAtivas.textContent || '0', 10);
+            if (!Number.isNaN(atual) && atual > 0) {
+              spanRotasAtivas.textContent = String(atual - 1);
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao excluir rota: ' + (err.message || ''));
+        }
+      });
+    }
+
     if (filtroData && listaViagensDia) {
       filtroData.addEventListener('change', async () => {
         const dataSel = filtroData.value;
@@ -887,7 +760,6 @@
             { auth: true }
           );
 
-          // por enquanto, render genérico simples
           listaViagensDia.innerHTML = '';
 
           if (!viagens || !viagens.length) {
@@ -975,15 +847,14 @@
   // ===================== INIT GLOBAL =====================
 
   ready(function () {
-    // botão sair em qualquer página que tenha
     const btnSairGlobal = document.getElementById('btn-sair');
     if (btnSairGlobal) btnSairGlobal.addEventListener('click', logout);
 
     initCadastroUsuario();
     initLogin();
-    initCadastroRotas();
     initRotas();
     initPainel();
-    initHomeRotas(); // carrega os cards dinâmicos da home
+    initHomeRotas();
+    initHeaderPainelUsuario(); // ativa o botão do painel na home
   });
 })();

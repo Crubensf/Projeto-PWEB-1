@@ -4,58 +4,80 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Van Já — Rotas Universitárias</title>
+
+  <!-- Fonte -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
-  
+
+  <!-- HEADER -->
   <header class="cabecalho-site" role="banner">
     <div class="caixa caixa--header linha-cabecalho">
+
+      <!-- LOGO -->
       <a class="marca" href="index.html" aria-label="Van Já — Página inicial">
         <img src="imagens/van.png" alt="Ícone de Van" class="icone-van">
         Van Já
       </a>
 
+      <!-- NAVEGAÇÃO -->
       <nav class="navegacao" aria-label="Principal">
         <a href="#rotas">Rotas</a>
         <a href="#ajuda">Ajuda</a>
       </nav>
 
-      
+      <!-- AÇÕES -->
       <div class="acoes-header">
-        <a class="botao botao-invertido" href="login.html">Login</a>
-        <a class="botao botao-primario" href="cadastrar.html">Cadastrar</a>
-      </div>
+  <a class="botao botao-invertido" href="login.html" id="btn-login-link">Login</a>
+  <a class="botao botao-primario" href="cadastrar.html" id="btn-cadastrar-link">Cadastrar</a>
+
+  <!-- Botão de painel (aparece pra qualquer usuário logado) -->
+  <a
+    id="btn-painel-usuario"
+    class="botao botao-primario"
+    href="painel.html"
+    style="display:none"
+  >
+    Meu painel
+  </a>
+</div>
+
+
     </div>
   </header>
 
- 
+  <!-- CONTEÚDO -->
   <main id="conteudo">
-   
+
+    <!-- HERO -->
     <section class="faixa-principal" aria-labelledby="titulo-principal">
       <div class="caixa faixa-conteudo">
         <h1 id="titulo-principal">Facilite sua locomoção até a universidade</h1>
         <p class="texto-apoio">
-          O Van Já conecta estudantes às rotas universitárias diárias de forma rápida, 
+          O Van Já conecta estudantes às rotas universitárias diárias de forma rápida,
           segura e acessível. Encontre a van ideal e chegue ao campus sem preocupações.
         </p>
         <a class="botao botao-primario" href="rotas.html">Ver rotas disponíveis</a>
       </div>
     </section>
 
-    <!-- cards das rotas -->
+    <!-- ROTAS EM DESTAQUE -->
     <section id="rotas" class="secao" aria-labelledby="titulo-rotas">
       <div class="caixa">
         <h2 id="titulo-rotas" class="titulo-secao">Rotas em Destaque</h2>
 
-       <div class="grade-cartoes tres-colunas" id="destaque-rotas">
-  <!-- Os cards serão carregados via JavaScript -->
-</div>
+        <div class="grade-cartoes tres-colunas" id="destaque-rotas">
+          <!-- JS carrega aqui -->
+        </div>
 
-      
-        <p class="mais"><a class="link" href="rotas.html">Ver todas as rotas disponíveis</a></p>
+        <p class="mais">
+          <a class="link" href="rotas.html">Ver todas as rotas disponíveis</a>
+        </p>
       </div>
     </section>
 
@@ -65,9 +87,10 @@
         <h2 id="titulo-faq" class="titulo-secao">Perguntas Frequentes</h2>
 
         <div class="grade-faq">
+
           <details class="item-faq">
             <summary>Como faço o pagamento?</summary>
-            <p>Pix, Especie ou cartão.</p>
+            <p>Pix, espécie ou cartão.</p>
           </details>
 
           <details class="item-faq">
@@ -77,30 +100,37 @@
 
           <details class="item-faq">
             <summary>É seguro viajar de van?</summary>
-            <p>Os motoristas são verificados e  as vans mantem a manutenção em dia. Wi-Fi e ar-condicionado em grande parte da frota.</p>
+            <p>
+              Os motoristas são verificados e as vans mantêm a manutenção em dia.
+              Wi-Fi e ar-condicionado em grande parte da frota.
+            </p>
           </details>
 
           <figure class="depoimento">
             <img class="avatar" src="" alt="Foto de estudante" />
             <figcaption>
-              <p class="citacao">Chego à aula no horário e com segurança. Economia e conforto todo mês.</p>
+              <p class="citacao">
+                Chego à aula no horário e com segurança. Economia e conforto todo mês.
+              </p>
               <span class="autor">Estudante, UFPI</span>
             </figcaption>
           </figure>
+
         </div>
       </div>
     </section>
+
   </main>
 
-  
+  <!-- RODAPÉ -->
   <footer class="rodape-site" role="contentinfo">
     <div class="caixa">
       <p>© 2025 Van Já. Todos os direitos reservados.</p>
     </div>
   </footer>
 
+  <!-- SCRIPT -->
+  <script src="js/app.js"></script>
 
-<!-- Script -->
-<script src="js/app.js"></script>
 </body>
 </html>
