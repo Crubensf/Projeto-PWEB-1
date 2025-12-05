@@ -14,14 +14,15 @@
     { method = 'GET', body = null, auth = false, isForm = false } = {}
   ) {
     const url = `${API_BASE}${path}`;
-    const options = { method, headers: {} };
 
-    if (auth) {
-      const token = localStorage.getItem('token');
-      if (token) {
-        options.headers['Authorization'] = `Bearer ${token}`;
-      }
-    }
+    // IMPORTANTE: credentials: 'include' para mandar/receber cookie
+    const options = {
+      method,
+      headers: {},
+      credentials: 'include',
+    };
+
+    // Não usamos mais Authorization com token, tudo é via cookie httpOnly
 
     if (body) {
       if (isForm) {
@@ -51,8 +52,8 @@
     return data;
   }
 
+  // Agora só guardamos o usuário no localStorage (cookie já cuida da auth)
   function saveAuth(token, usuario) {
-    if (token) localStorage.setItem('token', token);
     if (usuario) localStorage.setItem('usuario', JSON.stringify(usuario));
   }
 
@@ -65,8 +66,14 @@
     }
   }
 
-  function logout() {
-    localStorage.removeItem('token');
+  async function logout() {
+    try {
+      // avisa o backend pra apagar o cookie
+      await apiRequest('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error(e);
+    }
+    // limpa só os dados locais do usuário
     localStorage.removeItem('usuario');
     window.location.href = 'index.html';
   }
@@ -89,14 +96,10 @@
 
     const user = getUsuario();
 
-    if (user) {
+    // Só motorista vê o botão
+    if (user && user.perfil === 'motorista') {
       btnPainel.style.display = 'inline-flex';
-
-      if (user.perfil === 'motorista') {
-        btnPainel.textContent = 'Painel do motorista';
-      } else {
-        btnPainel.textContent = 'Meu painel';
-      }
+      btnPainel.textContent = 'Painel do motorista';
     } else {
       btnPainel.style.display = 'none';
     }
@@ -305,6 +308,7 @@
           isForm: true,
         });
 
+        // backend já setou o cookie, aqui só guardamos o usuário
         saveAuth(data.access_token, data.usuario);
         alert('Cadastro concluído!');
         location.assign('painel.html');
@@ -336,6 +340,7 @@
           body: { email, senha },
         });
 
+        // cookie já foi setado pelo backend
         saveAuth(data.access_token, data.usuario);
         alert('Login realizado com sucesso!');
         location.assign('painel.html');
@@ -523,62 +528,7 @@
     carregarRotas();
   }
 
-  // ===================== PAINEL =====================
-
-  function renderViagensLista(viagens, container, msgVaziaEl) {
-    if (!container) return;
-    container.innerHTML = '';
-
-    if (!viagens || !viagens.length) {
-      if (msgVaziaEl) msgVaziaEl.style.display = 'block';
-      return;
-    }
-
-    if (msgVaziaEl) msgVaziaEl.style.display = 'none';
-
-    viagens.forEach((v) => {
-      const rota = v.rota || {};
-      const item = document.createElement('div');
-      item.className = 'item-card';
-
-      const info = document.createElement('div');
-      info.className = 'info';
-
-      const strong = document.createElement('strong');
-      strong.textContent = `${rota.origem || ''} → ${rota.destino || ''}`;
-
-      const smallData = document.createElement('small');
-      smallData.textContent = `${formatDateBr(v.data)} às ${
-        rota.hora_ida || '--:--'
-      }`;
-
-      info.appendChild(strong);
-      info.appendChild(smallData);
-
-      const statusDiv = document.createElement('div');
-      const statusSpan = document.createElement('div');
-      const status = (v.status || '').toLowerCase();
-
-      let classeStatus = 'status';
-      if (status === 'reservada') classeStatus += ' ativo';
-      if (status === 'concluida') classeStatus += ' concluida';
-
-      statusSpan.className = classeStatus;
-      statusSpan.textContent =
-        status === 'reservada'
-          ? 'Ativa'
-          : status === 'concluida'
-          ? 'Concluída'
-          : v.status || '';
-
-      statusDiv.appendChild(statusSpan);
-
-      item.appendChild(info);
-      item.appendChild(statusDiv);
-
-      container.appendChild(item);
-    });
-  }
+  // ===================== PAINEL (SÓ MOTORISTA TEM LÓGICA) =====================
 
   function renderRotasMotorista(rotas, container, msgVaziaEl) {
     if (!container) return;
@@ -648,34 +598,6 @@
 
       container.appendChild(item);
     });
-  }
-
-  async function carregarPainelEstudante() {
-    const listaProximas = document.getElementById('lista-proximas-viagens');
-    const msgSemProximas = document.getElementById('msg-sem-proximas');
-
-    const listaHist = document.getElementById('lista-historico-viagens');
-    const msgSemHist = document.getElementById('msg-sem-historico');
-
-    try {
-      const proximas = await apiRequest(
-        '/api/passageiro/viagens/proximas',
-        { auth: true }
-      );
-      renderViagensLista(proximas, listaProximas, msgSemProximas);
-    } catch (err) {
-      console.error(err);
-    }
-
-    try {
-      const historico = await apiRequest(
-        '/api/passageiro/viagens/historico',
-        { auth: true }
-      );
-      renderViagensLista(historico, listaHist, msgSemHist);
-    } catch (err) {
-      console.error(err);
-    }
   }
 
   async function carregarPainelMotorista() {
@@ -854,13 +776,10 @@
     }
 
     if (user.perfil === 'estudante') {
-      if (textoTipo)
-        textoTipo.textContent =
-          'Aqui você vê suas passagens ativas e o histórico de viagens.';
+      // Painel do estudante sem lógica de viagens / compras
+      if (textoTipo) textoTipo.textContent = '';
       if (blocoPassageiro) blocoPassageiro.style.display = 'block';
       if (blocoMotorista) blocoMotorista.style.display = 'none';
-
-      carregarPainelEstudante();
     } else if (user.perfil === 'motorista') {
       if (textoTipo)
         textoTipo.textContent =

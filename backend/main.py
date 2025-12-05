@@ -1,14 +1,22 @@
-
 from datetime import datetime, timedelta, date
 from typing import Optional, List
 
-from fastapi import FastAPI, Depends, HTTPException, status, Form, Query
+from fastapi import (
+    FastAPI,
+    Depends,
+    HTTPException,
+    status,
+    Form,
+    Query,
+    Response,
+    Request,
+)
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer  # pode ficar, mesmo se não usar mais
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from pydantic import EmailStr   
+from pydantic import EmailStr
 
 from db import get_db
 from models import Usuario, Rota, Viagem
@@ -36,7 +44,7 @@ SECRET_KEY = "Ablublé"
 ALGORITHM = "HS256"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")  # não será mais usado para auth principal via cookie
 
 origins = [
     "http://127.0.0.1:5500",
@@ -50,7 +58,7 @@ app = FastAPI(title="Van Já API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=True,  # necessário para cookie
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -75,15 +83,19 @@ def create_access_token(sub: str, expires_delta: Optional[timedelta] = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+# === NOVO: pega usuário a partir do COOKIE em vez de header Authorization ===
 def get_usuario_from_token(
-    token: str = Depends(oauth2_scheme),
+    request: Request,
     db: Session = Depends(get_db),
 ):
     cred_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Não autenticado",
-        headers={"WWW-Authenticate": "Bearer"},
     )
+
+    token = request.cookies.get("access_token")
+    if not token:
+        raise cred_exc
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -151,6 +163,7 @@ def viagem_to_out(v: Viagem) -> ViagemOut:
 
 @app.post("/api/auth/register", response_model=Token)
 async def registrar_usuario(
+    response: Response,
     nome: str = Form(...),
     email: EmailStr = Form(...),
     senha: str = Form(...),
@@ -158,8 +171,6 @@ async def registrar_usuario(
     cnh: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
-    from pydantic import EmailStr  # import local para o tipo do parâmetro (ou mova pro topo)
-
     if db.query(Usuario).filter(Usuario.email == email).first():
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
 
@@ -176,18 +187,49 @@ async def registrar_usuario(
     db.refresh(user)
 
     token = create_access_token(sub=str(user.id))
+
+    # grava token em cookie httpOnly
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=60 * 60 * 8,  # 8 horas
+    )
+
     return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
 
 
 @app.post("/api/auth/login", response_model=Token)
-def login(data: LoginData, db: Session = Depends(get_db)):
+def login(
+    data: LoginData,
+    response: Response,
+    db: Session = Depends(get_db),
+):
     user = db.query(Usuario).filter(Usuario.email == data.email).first()
 
     if not user or not verify_password(data.senha, user.senha_hash):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
     token = create_access_token(sub=str(user.id))
+
+    # grava token em cookie httpOnly
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=60 * 60 * 8,  # 8 horas
+    )
+
     return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
+
+
+@app.post("/api/auth/logout")
+def logout(response: Response):
+    # apaga o cookie de autenticação
+    response.delete_cookie("access_token")
+    return {"message": "Logout realizado com sucesso"}
 
 
 # =========================
