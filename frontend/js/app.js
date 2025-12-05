@@ -1,4 +1,4 @@
-// frontend/js/app.js
+
 (function () {
   const API_BASE = 'http://127.0.0.1:8000';
 
@@ -15,18 +15,18 @@
   ) {
     const url = `${API_BASE}${path}`;
 
-    // IMPORTANTE: credentials: 'include' para mandar/receber cookie
+  
     const options = {
       method,
       headers: {},
       credentials: 'include',
     };
 
-    // Não usamos mais Authorization com token, tudo é via cookie httpOnly
+ 
 
     if (body) {
       if (isForm) {
-        options.body = body; // FormData
+        options.body = body;
       } else {
         options.headers['Content-Type'] = 'application/json';
         options.body = JSON.stringify(body);
@@ -52,7 +52,7 @@
     return data;
   }
 
-  // Agora só guardamos o usuário no localStorage (cookie já cuida da auth)
+
   function saveAuth(token, usuario) {
     if (usuario) localStorage.setItem('usuario', JSON.stringify(usuario));
   }
@@ -68,12 +68,12 @@
 
   async function logout() {
     try {
-      // avisa o backend pra apagar o cookie
+      
       await apiRequest('/api/auth/logout', { method: 'POST' });
     } catch (e) {
       console.error(e);
     }
-    // limpa só os dados locais do usuário
+    
     localStorage.removeItem('usuario');
     window.location.href = 'index.html';
   }
@@ -96,7 +96,7 @@
 
     const user = getUsuario();
 
-    // Só motorista vê o botão
+    
     if (user && user.perfil === 'motorista') {
       btnPainel.style.display = 'inline-flex';
       btnPainel.textContent = 'Painel do motorista';
@@ -308,7 +308,7 @@
           isForm: true,
         });
 
-        // backend já setou o cookie, aqui só guardamos o usuário
+        
         saveAuth(data.access_token, data.usuario);
         alert('Cadastro concluído!');
         location.assign('painel.html');
@@ -340,7 +340,7 @@
           body: { email, senha },
         });
 
-        // cookie já foi setado pelo backend
+        
         saveAuth(data.access_token, data.usuario);
         alert('Login realizado com sucesso!');
         location.assign('painel.html');
@@ -653,7 +653,7 @@
             return;
           }
 
-          // manda pra tela de cadastro, reutilizando o formulário
+          
           window.location.href = `cadastroRotas.html?rotaId=${rotaId}`;
           return;
         }
@@ -776,7 +776,7 @@
     }
 
     if (user.perfil === 'estudante') {
-      // Painel do estudante sem lógica de viagens / compras
+      
       if (textoTipo) textoTipo.textContent = '';
       if (blocoPassageiro) blocoPassageiro.style.display = 'block';
       if (blocoMotorista) blocoMotorista.style.display = 'none';

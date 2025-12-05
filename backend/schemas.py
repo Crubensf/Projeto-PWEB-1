@@ -1,4 +1,4 @@
-# backend/schemas.py
+
 from datetime import datetime, date
 from typing import Optional, List
 
@@ -18,7 +18,7 @@ class UsuarioOut(UsuarioBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True  # (equivalente ao antigo orm_mode)
+        from_attributes = True  
 
 
 class UsuarioCreate(UsuarioBase):

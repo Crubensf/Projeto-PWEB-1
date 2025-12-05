@@ -12,7 +12,7 @@ from fastapi import (
     Request,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer  # pode ficar, mesmo se não usar mais
+from fastapi.security import OAuth2PasswordBearer  
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -36,15 +36,15 @@ from schemas import (
 )
 
 
-# =========================
+
 # CONFIG GERAL / AUTH
-# =========================
+
 
 SECRET_KEY = "Ablublé"
 ALGORITHM = "HS256"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")  # não será mais usado para auth principal via cookie
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")  
 
 origins = [
     "http://127.0.0.1:5500",
@@ -58,14 +58,12 @@ app = FastAPI(title="Van Já API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,  # necessário para cookie
+    allow_credentials=True, 
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# =========================
-# HELPERS GERAIS
-# =========================
+
 
 
 def hash_password(password: str) -> str:
@@ -83,7 +81,7 @@ def create_access_token(sub: str, expires_delta: Optional[timedelta] = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-# === NOVO: pega usuário a partir do COOKIE em vez de header Authorization ===
+
 def get_usuario_from_token(
     request: Request,
     db: Session = Depends(get_db),
@@ -124,9 +122,8 @@ def get_estudante(user=Depends(get_usuario_from_token)):
     return user
 
 
-# =========================
 # HELPERS DE CONVERSÃO
-# =========================
+
 
 
 def rota_to_out(r: Rota) -> RotaOut:
@@ -156,9 +153,10 @@ def viagem_to_out(v: Viagem) -> ViagemOut:
     )
 
 
-# =========================
+
+
 # ROTAS AUTH (LOGIN / CADASTRO)
-# =========================
+
 
 
 @app.post("/api/auth/register", response_model=Token)
@@ -188,13 +186,13 @@ async def registrar_usuario(
 
     token = create_access_token(sub=str(user.id))
 
-    # grava token em cookie httpOnly
+    
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         samesite="lax",
-        max_age=60 * 60 * 8,  # 8 horas
+        max_age=60 * 60 * 8, 
     )
 
     return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
@@ -213,7 +211,7 @@ def login(
 
     token = create_access_token(sub=str(user.id))
 
-    # grava token em cookie httpOnly
+    
     response.set_cookie(
         key="access_token",
         value=token,
@@ -227,14 +225,13 @@ def login(
 
 @app.post("/api/auth/logout")
 def logout(response: Response):
-    # apaga o cookie de autenticação
     response.delete_cookie("access_token")
     return {"message": "Logout realizado com sucesso"}
 
 
-# =========================
+
 # ROTAS USUÁRIO (CRUD)
-# =========================
+
 
 
 @app.get("/api/usuarios/me", response_model=UsuarioOut)
@@ -285,12 +282,12 @@ def deletar_me(
     # apagar usuário
     db.delete(user)
     db.commit()
-    # 204 sem conteúdo
+    
 
 
-# =========================
+
 # ROTAS GERAIS (LISTAGEM DE ROTAS)
-# =========================
+
 
 
 @app.get("/api/rotas", response_model=List[RotaOut])
@@ -312,9 +309,9 @@ def listar_rotas(
     return [rota_to_out(r) for r in q.all()]
 
 
-# =========================
+
 # ROTAS MOTORISTA (CRUD DE ROTAS)
-# =========================
+
 
 
 @app.post("/api/motorista/rotas", response_model=RotaOut)
@@ -476,9 +473,9 @@ def viagens_motorista(
     return [viagem_to_out(v) for v in viagens]
 
 
-# =========================
+
 # ROTAS PASSAGEIRO (CRUD DE VIAGENS)
-# =========================
+
 
 
 @app.post("/api/passageiro/viagens", response_model=ViagemOut)

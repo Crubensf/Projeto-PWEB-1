@@ -14,7 +14,7 @@ Base = declarative_base()
 
 
 def get_db():
-    """Dependência para obter a sessão de banco via FastAPI."""
+    
     db = SessionLocal()
     try:
         yield db
