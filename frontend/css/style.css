@@ -414,6 +414,97 @@ body{
   background: rgba(220, 38, 38, 0.08);
 }
 
+/* bloco da lista de rotas abaixo do formulário */
+.rotas-card--lista {
+  margin-top: 24px;
+}
+
+.msg-sem-rotas {
+  font-size: 0.9rem;
+  color: var(--muted, #6b7280);
+  margin-bottom: 8px;
+}
+
+.lista-rotas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* card de cada rota cadastrada */
+.item-card.rota-cadastrada {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--sombra, 0 6px 18px rgba(3, 30, 22, 0.08));
+}
+
+.item-card .info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-card .info strong {
+  font-size: 0.95rem;
+}
+
+.item-card .info small {
+  font-size: 0.8rem;
+  color: var(--muted, #6b7280);
+}
+
+.item-card .info-secundaria {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+/* badge de status */
+.status.ativo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.08);
+  color: #15803d;
+}
+
+/* botões de ação na lista */
+.btn-editar-rota,
+.btn-excluir-rota {
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+}
+
+/* botão EDITAR */
+.btn-editar-rota {
+  background: transparent;
+  border-color: var(--verde-700, #176a53);
+  color: var(--verde-700, #176a53);
+}
+
+.btn-editar-rota:hover {
+  background: rgba(23, 106, 83, 0.06);
+}
+
+/* botão EXCLUIR */
+.btn-excluir-rota {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.btn-excluir-rota:hover {
+  background: #fecaca;
+}
 
 
 

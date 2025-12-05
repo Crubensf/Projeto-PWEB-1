@@ -1,37 +1,42 @@
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, Query
+
+from datetime import datetime, timedelta, date
+from typing import Optional, List
+
+from fastapi import FastAPI, Depends, HTTPException, status, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
-from datetime import datetime, timedelta, date
-
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Date, DateTime, Float
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship, Session
-
-from passlib.context import CryptContext
 from jose import jwt, JWTError
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+from pydantic import EmailStr   
 
-# =========================
-# CONFIG GERAL / DB / AUTH
-# =========================
-
-SQLALCHEMY_DATABASE_URL = "sqlite:///./vanja.db"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+from db import get_db
+from models import Usuario, Rota, Viagem
+from schemas import (
+    UsuarioOut,
+    UsuarioCreate,
+    UsuarioUpdate,
+    LoginData,
+    Token,
+    RotaCreate,
+    RotaUpdate,
+    RotaOut,
+    ViagemCreate,
+    ViagemUpdate,
+    ViagemOut,
+    MotoristaResumo,
 )
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
-SECRET_KEY = "troca-essa-string-por-uma-bem-grande-e-secreta"
+
+# =========================
+# CONFIG GERAL / AUTH
+# =========================
+
+SECRET_KEY = "Ablublé"
 ALGORITHM = "HS256"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-
-# =========================
-# CORS
-# =========================
 
 origins = [
     "http://127.0.0.1:5500",
@@ -50,17 +55,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # =========================
-# HELPERS
+# HELPERS GERAIS
 # =========================
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 def hash_password(password: str) -> str:
@@ -80,7 +77,7 @@ def create_access_token(sub: str, expires_delta: Optional[timedelta] = None):
 
 def get_usuario_from_token(
     token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     cred_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -116,146 +113,9 @@ def get_estudante(user=Depends(get_usuario_from_token)):
 
 
 # =========================
-# MODELOS DB
-# =========================
-
-class Usuario(Base):
-    __tablename__ = "usuarios"
-
-    id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    senha_hash = Column(String, nullable=False)
-    perfil = Column(String, nullable=False)
-
-    cnh = Column(String, nullable=True)
-    cnh_imagem_path = Column(String, nullable=True)
-    doc_veiculo_imagem_path = Column(String, nullable=True)
-
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    rotas = relationship("Rota", back_populates="motorista")
-    viagens = relationship("Viagem", back_populates="passageiro")
-
-
-class Rota(Base):
-    __tablename__ = "rotas"
-
-    id = Column(Integer, primary_key=True, index=True)
-    motorista_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
-
-    nome = Column(String, nullable=False)
-    origem = Column(String, nullable=False)
-    destino = Column(String, nullable=False)
-    hora_ida = Column(String, nullable=False)
-    hora_volta = Column(String, nullable=True)
-    vagas = Column(Integer, nullable=False)
-    veiculo = Column(String, nullable=True)
-
-    dias_semana = Column(String, nullable=False)
-    preco = Column(Float, nullable=False)
-    imagem_path = Column(String, nullable=True)
-
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    motorista = relationship("Usuario", back_populates="rotas")
-    viagens = relationship("Viagem", back_populates="rota")
-
-
-class Viagem(Base):
-    __tablename__ = "viagens"
-
-    id = Column(Integer, primary_key=True, index=True)
-    rota_id = Column(Integer, ForeignKey("rotas.id"), nullable=False)
-    passageiro_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
-
-    data = Column(Date, nullable=False)
-    status = Column(String, default="reservada")
-
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    rota = relationship("Rota", back_populates="viagens")
-    passageiro = relationship("Usuario", back_populates="viagens")
-
-
-# =========================
-# SCHEMAS API
-# =========================
-
-class UsuarioBase(BaseModel):
-    nome: str
-    email: EmailStr
-    perfil: str
-
-
-class UsuarioOut(UsuarioBase):
-    id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class UsuarioCreate(UsuarioBase):
-    senha: str
-    cnh: Optional[str] = None
-
-
-class LoginData(BaseModel):
-    email: EmailStr
-    senha: str
-
-
-class Token(BaseModel):
-    access_token: str
-    usuario: UsuarioOut
-
-
-class RotaBase(BaseModel):
-    nome: str
-    origem: str
-    destino: str
-    hora_ida: str
-    hora_volta: Optional[str] = None
-    vagas: int
-    veiculo: Optional[str] = None
-    dias_semana: List[str]
-    preco: float
-
-
-class RotaCreate(RotaBase):
-    pass
-
-
-class RotaOut(RotaBase):
-    id: int
-    motorista_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class ViagemCreate(BaseModel):
-    rota_id: int
-    data: date
-
-
-class ViagemOut(BaseModel):
-    id: int
-    rota: RotaOut
-    data: date
-    status: str
-
-
-class MotoristaResumo(BaseModel):
-    rotas_ativas: int
-    viagens_hoje: int
-    alunos_hoje: int
-
-
-# =========================
 # HELPERS DE CONVERSÃO
 # =========================
+
 
 def rota_to_out(r: Rota) -> RotaOut:
     return RotaOut(
@@ -285,15 +145,9 @@ def viagem_to_out(v: Viagem) -> ViagemOut:
 
 
 # =========================
-# INICIALIZA DB
+# ROTAS AUTH (LOGIN / CADASTRO)
 # =========================
 
-Base.metadata.create_all(bind=engine)
-
-
-# =========================
-# ROTAS AUTH
-# =========================
 
 @app.post("/api/auth/register", response_model=Token)
 async def registrar_usuario(
@@ -304,6 +158,8 @@ async def registrar_usuario(
     cnh: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
+    from pydantic import EmailStr  # import local para o tipo do parâmetro (ou mova pro topo)
+
     if db.query(Usuario).filter(Usuario.email == email).first():
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
 
@@ -320,7 +176,7 @@ async def registrar_usuario(
     db.refresh(user)
 
     token = create_access_token(sub=str(user.id))
-    return Token(access_token=token, usuario=UsuarioOut.from_orm(user))
+    return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
 
 
 @app.post("/api/auth/login", response_model=Token)
@@ -331,12 +187,69 @@ def login(data: LoginData, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
     token = create_access_token(sub=str(user.id))
-    return Token(access_token=token, usuario=UsuarioOut.from_orm(user))
+    return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
 
 
 # =========================
-# ROTAS GERAIS
+# ROTAS USUÁRIO (CRUD)
 # =========================
+
+
+@app.get("/api/usuarios/me", response_model=UsuarioOut)
+def me(user=Depends(get_usuario_from_token)):
+    return UsuarioOut.model_validate(user)
+
+
+@app.put("/api/usuarios/me", response_model=UsuarioOut)
+def atualizar_me(
+    dados: UsuarioUpdate,
+    db: Session = Depends(get_db),
+    user: Usuario = Depends(get_usuario_from_token),
+):
+    if dados.email and dados.email != user.email:
+        if db.query(Usuario).filter(Usuario.email == dados.email).first():
+            raise HTTPException(status_code=400, detail="E-mail já está em uso por outro usuário")
+
+    if dados.nome is not None:
+        user.nome = dados.nome
+    if dados.email is not None:
+        user.email = dados.email
+    if dados.cnh is not None:
+        user.cnh = dados.cnh
+    if dados.senha is not None and dados.senha.strip():
+        user.senha_hash = hash_password(dados.senha)
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return UsuarioOut.model_validate(user)
+
+
+@app.delete("/api/usuarios/me", status_code=204)
+def deletar_me(
+    db: Session = Depends(get_db),
+    user: Usuario = Depends(get_usuario_from_token),
+):
+    # apagar viagens como motorista (ligadas às rotas)
+    rotas = db.query(Rota).filter(Rota.motorista_id == user.id).all()
+    for rota in rotas:
+        db.query(Viagem).filter(Viagem.rota_id == rota.id).delete()
+        db.delete(rota)
+
+    # apagar viagens como passageiro
+    db.query(Viagem).filter(Viagem.passageiro_id == user.id).delete()
+
+    # apagar usuário
+    db.delete(user)
+    db.commit()
+    # 204 sem conteúdo
+
+
+# =========================
+# ROTAS GERAIS (LISTAGEM DE ROTAS)
+# =========================
+
 
 @app.get("/api/rotas", response_model=List[RotaOut])
 def listar_rotas(
@@ -358,8 +271,9 @@ def listar_rotas(
 
 
 # =========================
-# ROTAS MOTORISTA
+# ROTAS MOTORISTA (CRUD DE ROTAS)
 # =========================
+
 
 @app.post("/api/motorista/rotas", response_model=RotaOut)
 def criar_rota(
@@ -398,6 +312,64 @@ def minhas_rotas(
     return [rota_to_out(r) for r in rotas]
 
 
+@app.get("/api/motorista/rotas/{rota_id}", response_model=RotaOut)
+def obter_rota_motorista(
+    rota_id: int,
+    db: Session = Depends(get_db),
+    motorista: Usuario = Depends(get_motorista),
+):
+    rota = db.query(Rota).filter(
+        Rota.id == rota_id,
+        Rota.motorista_id == motorista.id
+    ).first()
+
+    if not rota:
+        raise HTTPException(status_code=404, detail="Rota não encontrada")
+
+    return rota_to_out(rota)
+
+
+@app.put("/api/motorista/rotas/{rota_id}", response_model=RotaOut)
+def atualizar_rota(
+    rota_id: int,
+    dados: RotaUpdate,
+    db: Session = Depends(get_db),
+    motorista: Usuario = Depends(get_motorista),
+):
+    rota = db.query(Rota).filter(
+        Rota.id == rota_id,
+        Rota.motorista_id == motorista.id
+    ).first()
+
+    if not rota:
+        raise HTTPException(status_code=404, detail="Rota não encontrada")
+
+    if dados.nome is not None:
+        rota.nome = dados.nome
+    if dados.origem is not None:
+        rota.origem = dados.origem
+    if dados.destino is not None:
+        rota.destino = dados.destino
+    if dados.hora_ida is not None:
+        rota.hora_ida = dados.hora_ida
+    if dados.hora_volta is not None:
+        rota.hora_volta = dados.hora_volta
+    if dados.vagas is not None:
+        rota.vagas = dados.vagas
+    if dados.veiculo is not None:
+        rota.veiculo = dados.veiculo
+    if dados.dias_semana is not None:
+        rota.dias_semana = ",".join(dados.dias_semana)
+    if dados.preco is not None:
+        rota.preco = dados.preco
+
+    db.add(rota)
+    db.commit()
+    db.refresh(rota)
+
+    return rota_to_out(rota)
+
+
 @app.delete("/api/motorista/rotas/{rota_id}", status_code=204)
 def deletar_rota(
     rota_id: int,
@@ -412,11 +384,9 @@ def deletar_rota(
     if not rota:
         raise HTTPException(status_code=404, detail="Rota não encontrada")
 
-    # apaga viagens ligadas à rota
     db.query(Viagem).filter(Viagem.rota_id == rota.id).delete()
     db.delete(rota)
     db.commit()
-    # 204 → sem conteúdo
 
 
 @app.get("/api/motorista/resumo", response_model=MotoristaResumo)
@@ -453,10 +423,6 @@ def viagens_motorista(
     db: Session = Depends(get_db),
     motorista: Usuario = Depends(get_motorista),
 ):
-    """
-    Lista viagens de rotas do motorista.
-    Se 'data' for informado, filtra por essa data.
-    """
     q = db.query(Viagem).join(Rota).filter(Rota.motorista_id == motorista.id)
 
     if data_ref:
@@ -469,8 +435,9 @@ def viagens_motorista(
 
 
 # =========================
-# ROTAS PASSAGEIRO
+# ROTAS PASSAGEIRO (CRUD DE VIAGENS)
 # =========================
+
 
 @app.post("/api/passageiro/viagens", response_model=ViagemOut)
 def reservar_viagem(
@@ -537,10 +504,44 @@ def viagens_historico(
     return [viagem_to_out(v) for v in viagens]
 
 
-# =========================
-# UTIL
-# =========================
+@app.patch("/api/passageiro/viagens/{viagem_id}", response_model=ViagemOut)
+def atualizar_viagem_passageiro(
+    viagem_id: int,
+    dados: ViagemUpdate,
+    db: Session = Depends(get_db),
+    estudante: Usuario = Depends(get_estudante),
+):
+    v = db.query(Viagem).filter(
+        Viagem.id == viagem_id,
+        Viagem.passageiro_id == estudante.id
+    ).first()
 
-@app.get("/api/usuarios/me", response_model=UsuarioOut)
-def me(user=Depends(get_usuario_from_token)):
-  return UsuarioOut.from_orm(user)
+    if not v:
+        raise HTTPException(status_code=404, detail="Viagem não encontrada")
+
+    if dados.status is not None:
+        v.status = dados.status
+
+    db.add(v)
+    db.commit()
+    db.refresh(v)
+
+    return viagem_to_out(v)
+
+
+@app.delete("/api/passageiro/viagens/{viagem_id}", status_code=204)
+def deletar_viagem_passageiro(
+    viagem_id: int,
+    db: Session = Depends(get_db),
+    estudante: Usuario = Depends(get_estudante),
+):
+    v = db.query(Viagem).filter(
+        Viagem.id == viagem_id,
+        Viagem.passageiro_id == estudante.id
+    ).first()
+
+    if not v:
+        raise HTTPException(status_code=404, detail="Viagem não encontrada")
+
+    db.delete(v)
+    db.commit()

@@ -85,12 +85,11 @@
 
   function initHeaderPainelUsuario() {
     const btnPainel = document.getElementById('btn-painel-usuario');
-    if (!btnPainel) return; // não está nessa página
+    if (!btnPainel) return;
 
     const user = getUsuario();
 
     if (user) {
-      // usuário logado → mostra botão
       btnPainel.style.display = 'inline-flex';
 
       if (user.perfil === 'motorista') {
@@ -99,7 +98,6 @@
         btnPainel.textContent = 'Meu painel';
       }
     } else {
-      // ninguém logado → esconde
       btnPainel.style.display = 'none';
     }
   }
@@ -153,7 +151,7 @@
 
   async function initHomeRotas() {
     const container = document.getElementById('destaque-rotas');
-    if (!container) return; // não está na index
+    if (!container) return;
 
     container.innerHTML = '<p>Carregando rotas...</p>';
 
@@ -296,7 +294,6 @@
 
       const formData = new FormData(form);
 
-      // padrão: estudante se não escolher
       if (!formData.get('perfil')) {
         formData.set('perfil', 'estudante');
       }
@@ -632,12 +629,18 @@
       spanStatus.className = 'status ativo';
       spanStatus.textContent = 'Reservas: (em breve)';
 
+      const btnEditar = document.createElement('button');
+      btnEditar.type = 'button';
+      btnEditar.className = 'botao botao-suave btn-editar-rota';
+      btnEditar.textContent = 'Editar rota';
+
       const btnExcluir = document.createElement('button');
       btnExcluir.type = 'button';
       btnExcluir.className = 'botao botao-suave btn-excluir-rota';
       btnExcluir.textContent = 'Excluir rota';
 
       info2.appendChild(spanStatus);
+      info2.appendChild(btnEditar);
       info2.appendChild(btnExcluir);
 
       item.appendChild(info);
@@ -712,12 +715,34 @@
     if (listaRotas) {
       listaRotas.addEventListener('click', async function (e) {
         const target = e.target;
-        const btn = target.closest
+
+        // ----- EDITAR ROTA -----
+        const btnEditar = target.closest
+          ? target.closest('.btn-editar-rota')
+          : null;
+
+        if (btnEditar) {
+          const item = btnEditar.closest('.item-card');
+          if (!item) return;
+
+          const rotaId = item.dataset.rotaId;
+          if (!rotaId) {
+            alert('Não foi possível identificar essa rota para edição.');
+            return;
+          }
+
+          // manda pra tela de cadastro, reutilizando o formulário
+          window.location.href = `cadastroRotas.html?rotaId=${rotaId}`;
+          return;
+        }
+
+        // ----- EXCLUIR ROTA -----
+        const btnExcluir = target.closest
           ? target.closest('.btn-excluir-rota')
           : null;
-        if (!btn) return;
+        if (!btnExcluir) return;
 
-        const item = btn.closest('.item-card');
+        const item = btnExcluir.closest('.item-card');
         if (!item) return;
 
         const rotaId = item.dataset.rotaId;
@@ -741,6 +766,9 @@
             if (!Number.isNaN(atual) && atual > 0) {
               spanRotasAtivas.textContent = String(atual - 1);
             }
+          }
+          if (!listaRotas.children.length && msgSemRotas) {
+            msgSemRotas.style.display = 'block';
           }
         } catch (err) {
           console.error(err);
@@ -855,6 +883,6 @@
     initRotas();
     initPainel();
     initHomeRotas();
-    initHeaderPainelUsuario(); // ativa o botão do painel na home
+    initHeaderPainelUsuario();
   });
 })();

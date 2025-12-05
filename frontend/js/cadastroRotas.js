@@ -73,15 +73,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   console.log('[cadastroRotas] form-rota encontrado, registrando submit');
 
-  // --- NOVO: container da lista de rotas e mensagem
-  const listaRotas = document.getElementById('lista-rotas-cadastro');
-  const msgSemRotas = document.getElementById('msg-sem-rotas-cadastro');
+  // indica se estamos editando uma rota (id) ou criando uma nova (null)
+  let rotaEmEdicaoId = null;
 
   const precoVis = document.getElementById('preco_vis');
   const preco = document.getElementById('preco');
   const listaParadas = document.getElementById('listaParadas');
   const addParadaBtn = document.getElementById('addParada');
   const imagem = document.getElementById('imagem');
+
+  const tituloPagina = document.getElementById('titulo-rotas');
+  const subtituloPagina = document.querySelector('.rotas-sub');
 
   const MAX_MB = 5;
   const MAX_BYTES = MAX_MB * 1024 * 1024;
@@ -170,146 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return wrap;
   }
 
-  // -------- NOVO: renderizar e carregar "minhas rotas" --------
-
-  function renderMinhasRotas(rotas) {
-    if (!listaRotas) return;
-
-    listaRotas.innerHTML = '';
-
-    if (!rotas || !rotas.length) {
-      if (msgSemRotas) {
-        msgSemRotas.textContent = 'Você ainda não cadastrou nenhuma rota.';
-        msgSemRotas.style.display = 'block';
-      }
-      return;
-    }
-
-    if (msgSemRotas) {
-      msgSemRotas.style.display = 'none';
-    }
-
-    rotas.forEach((r) => {
-      const item = document.createElement('div');
-      item.className = 'item-card rota-cadastrada';
-
-      let rotaId = null;
-      if (r.id != null) rotaId = r.id;
-      else if (r.rota_id != null) rotaId = r.rota_id;
-      else if (r._id != null) rotaId = r._id;
-
-      if (rotaId != null) {
-        item.dataset.rotaId = String(rotaId);
-      }
-
-      const info = document.createElement('div');
-      info.className = 'info';
-
-      const strong = document.createElement('strong');
-      strong.textContent = `${r.origem} → ${r.destino}`;
-
-      const smallDiasHora = document.createElement('small');
-      const dias = Array.isArray(r.dias_semana)
-        ? r.dias_semana.join(', ')
-        : r.dias_semana;
-
-      smallDiasHora.textContent = `${dias || ''} • ${r.hora_ida || ''}`;
-
-      const smallVagas = document.createElement('small');
-      smallVagas.textContent = `Vagas: ${r.vagas}`;
-
-      info.appendChild(strong);
-      info.appendChild(smallDiasHora);
-      info.appendChild(smallVagas);
-
-      const info2 = document.createElement('div');
-      info2.className = 'info-secundaria';
-
-      const spanStatus = document.createElement('span');
-      spanStatus.className = 'status ativo';
-      spanStatus.textContent = 'Ativa';
-
-      const btnExcluir = document.createElement('button');
-      btnExcluir.type = 'button';
-      btnExcluir.className = 'botao botao-suave btn-excluir-rota';
-      btnExcluir.textContent = 'Excluir rota';
-
-      info2.appendChild(spanStatus);
-      info2.appendChild(btnExcluir);
-
-      item.appendChild(info);
-      item.appendChild(info2);
-
-      listaRotas.appendChild(item);
-    });
-  }
-
-  async function carregarMinhasRotas() {
-    if (!listaRotas) return;
-    try {
-      const rotas = await apiRequest('/api/motorista/minhas-rotas', {
-        auth: true,
-      });
-      console.log('[cadastroRotas] minhas rotas:', rotas);
-      renderMinhasRotas(rotas);
-    } catch (err) {
-      console.error('[cadastroRotas] erro ao carregar minhas rotas:', err);
-      if (msgSemRotas) {
-        msgSemRotas.textContent = 'Erro ao carregar suas rotas.';
-        msgSemRotas.style.display = 'block';
-      }
-    }
-  }
-
-  // clique em "Excluir rota" dentro da lista
-  if (listaRotas) {
-    listaRotas.addEventListener('click', async function (e) {
-      const target = e.target;
-      const btn = target.closest
-        ? target.closest('.btn-excluir-rota')
-        : null;
-      if (!btn) return;
-
-      const item = btn.closest('.item-card');
-      if (!item) return;
-
-      const rotaId = item.dataset.rotaId;
-      if (!rotaId) {
-        alert('Não foi possível identificar essa rota para exclusão.');
-        return;
-      }
-
-      if (!confirm('Tem certeza que deseja excluir esta rota?')) {
-        return;
-      }
-
-      try {
-        await apiRequest('/api/motorista/rotas/' + rotaId, {
-          method: 'DELETE',
-          auth: true,
-        });
-        item.remove();
-
-        if (!listaRotas.children.length && msgSemRotas) {
-          msgSemRotas.textContent = 'Você ainda não cadastrou nenhuma rota.';
-          msgSemRotas.style.display = 'block';
-        }
-      } catch (err) {
-        console.error('[cadastroRotas] ERRO AO EXCLUIR ROTA:', err);
-        alert('Erro ao excluir rota: ' + (err.message || ''));
-      }
-    });
-  }
-
-  // -------- fim da parte nova --------
-
-  if (precoVis) {
-    precoVis.addEventListener('input', formatPrecoOnInput);
-    precoVis.addEventListener('blur', function () {
-      if (precoVis.value) formatPrecoOnInput();
-    });
-  }
-
+  // ---- inicializa form de paradas ----
   if (addParadaBtn && listaParadas) {
     addParadaBtn.addEventListener('click', function () {
       listaParadas.appendChild(criaLinhaParada());
@@ -320,6 +183,90 @@ document.addEventListener('DOMContentLoaded', function () {
       criaLinhaParada('Ponto de encontro', '06:50')
     );
   }
+
+  if (precoVis) {
+    precoVis.addEventListener('input', formatPrecoOnInput);
+    precoVis.addEventListener('blur', function () {
+      if (precoVis.value) formatPrecoOnInput();
+    });
+  }
+
+  // ============ MODO EDIÇÃO (rotaId na URL) ============
+
+  async function carregarRotaParaEdicao(rotaId) {
+    try {
+      console.log('[cadastroRotas] carregando rota para edição, id =', rotaId);
+      const rota = await apiRequest(`/api/motorista/rotas/${rotaId}`, {
+        auth: true,
+      });
+      console.log('[cadastroRotas] rota carregada:', rota);
+
+      rotaEmEdicaoId = rotaId;
+
+      // título/subtítulo
+      if (tituloPagina) {
+        tituloPagina.textContent = 'Editar rota';
+      }
+      if (subtituloPagina) {
+        subtituloPagina.textContent = 'Atualize as informações da sua rota.';
+      }
+
+      // preenche campos
+      form.nome.value = rota.nome || '';
+      form.origem.value = rota.origem || '';
+      form.destino.value = rota.destino || '';
+      form.partida.value = rota.hora_ida || '';
+      form.retorno.value = rota.hora_volta || '';
+      form.vagas.value = rota.vagas != null ? rota.vagas : '';
+
+      if (form.veiculo) {
+        form.veiculo.value = rota.veiculo || '';
+      }
+
+      // dias da semana
+      const diasArray = Array.isArray(rota.dias_semana)
+        ? rota.dias_semana
+        : String(rota.dias_semana || '').split(',');
+
+      form
+        .querySelectorAll('input[name="dias"]')
+        .forEach((chk) => {
+          chk.checked = diasArray.includes(chk.value);
+        });
+
+      // preço
+      if (typeof rota.preco === 'number') {
+        if (preco) preco.value = String(rota.preco);
+        if (precoVis) precoVis.value = fmt.format(rota.preco);
+      }
+
+      // paradas (se backend devolver algo; aqui deixamos simples,
+      // pode adaptar depois para um campo tipo rota.paradas)
+      // por enquanto não mexemos nas paradas existentes.
+
+      // botão submit
+      const btnSubmit = form.querySelector('button[type="submit"]');
+      if (btnSubmit) btnSubmit.textContent = 'Salvar alterações da rota';
+    } catch (err) {
+      console.error('[cadastroRotas] erro ao carregar rota para edição:', err);
+      alert('Erro ao carregar dados da rota para edição.');
+    }
+  }
+
+  // Detecta rotaId na URL
+  const params = new URLSearchParams(window.location.search);
+  const rotaIdParam = params.get('rotaId');
+  if (rotaIdParam) {
+    // entra em modo edição
+    carregarRotaParaEdicao(rotaIdParam);
+  } else {
+    // modo cadastro normal (título padrão)
+    if (tituloPagina) tituloPagina.textContent = 'Cadastrar rota';
+    if (subtituloPagina)
+      subtituloPagina.textContent = 'Preencha os dados da sua rota.';
+  }
+
+  // ============ SUBMIT DO FORMULÁRIO ============
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -341,7 +288,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     );
 
-    // loga os valores crus do formulário
     console.log('[cadastroRotas] valores do form:', {
       nome: form.nome.value,
       origem: form.origem.value,
@@ -429,38 +375,43 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     console.log('[cadastroRotas] payload rota pronto pra enviar:', rota);
+    console.log('[cadastroRotas] rotaEmEdicaoId =', rotaEmEdicaoId);
 
     try {
-      const resposta = await apiRequest('/api/motorista/rotas', {
-        method: 'POST',
+      const url = rotaEmEdicaoId
+        ? '/api/motorista/rotas/' + rotaEmEdicaoId
+        : '/api/motorista/rotas';
+
+      const method = rotaEmEdicaoId ? 'PUT' : 'POST';
+
+      const resposta = await apiRequest(url, {
+        method,
         body: rota,
         auth: true,
       });
 
-      console.log('[cadastroRotas] resposta da API ao criar rota:', resposta);
+      console.log('[cadastroRotas] resposta da API ao salvar rota:', resposta);
 
       const rotaId =
         (resposta && (resposta.id || resposta.rota_id || resposta._id)) || null;
 
-      alert(
-        'Rota salva com sucesso!' +
-          (rotaId ? ' (id: ' + rotaId + ')' : '')
-      );
+      if (rotaEmEdicaoId) {
+        alert(
+          'Rota atualizada com sucesso!' +
+            (rotaId ? ' (id: ' + rotaId + ')' : '')
+        );
+      } else {
+        alert(
+          'Rota salva com sucesso!' +
+            (rotaId ? ' (id: ' + rotaId + ')' : '')
+        );
+      }
 
-      try {
-        form.reset();
-        if (precoVis) precoVis.value = '';
-        if (preco) preco.value = '';
-      } catch (e) {}
-
-      // depois de cadastrar, recarrega a lista
-      await carregarMinhasRotas();
+      // depois de salvar, pode voltar para o painel
+      window.location.href = 'painel.html';
     } catch (err) {
       console.error('[cadastroRotas] ERRO AO SALVAR ROTA:', err);
       alert('Erro ao salvar rota: ' + (err.message || ''));
     }
   });
-
-  // carrega as rotas do motorista ao abrir a página
-  carregarMinhasRotas();
 });
