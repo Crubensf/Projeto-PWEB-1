@@ -1,8 +1,5 @@
-
 (function () {
   const API_BASE = 'http://127.0.0.1:8000';
-
-  // ===================== HELPERS GERAIS =====================
 
   function ready(fn) {
     if (document.readyState !== 'loading') fn();
@@ -11,18 +8,15 @@
 
   async function apiRequest(
     path,
-    { method = 'GET', body = null, auth = false, isForm = false } = {}
+    { method = 'GET', body = null, isForm = false } = {}
   ) {
     const url = `${API_BASE}${path}`;
 
-  
     const options = {
       method,
       headers: {},
       credentials: 'include',
     };
-
- 
 
     if (body) {
       if (isForm) {
@@ -38,9 +32,7 @@
 
     try {
       data = await resp.json();
-    } catch {
-      // resposta sem JSON
-    }
+    } catch {}
 
     if (!resp.ok) {
       const msg =
@@ -52,8 +44,7 @@
     return data;
   }
 
-
-  function saveAuth(token, usuario) {
+  function saveAuth(usuario) {
     if (usuario) localStorage.setItem('usuario', JSON.stringify(usuario));
   }
 
@@ -68,12 +59,11 @@
 
   async function logout() {
     try {
-      
       await apiRequest('/api/auth/logout', { method: 'POST' });
     } catch (e) {
       console.error(e);
     }
-    
+
     localStorage.removeItem('usuario');
     window.location.href = 'index.html';
   }
@@ -88,15 +78,12 @@
     return `${dia}/${mes}/${ano}`;
   }
 
-  // ===================== HEADER: BOTÃO PAINEL USUÁRIO =====================
-
   function initHeaderPainelUsuario() {
     const btnPainel = document.getElementById('btn-painel-usuario');
     if (!btnPainel) return;
 
     const user = getUsuario();
 
-    
     if (user && user.perfil === 'motorista') {
       btnPainel.style.display = 'inline-flex';
       btnPainel.textContent = 'Painel do motorista';
@@ -119,11 +106,21 @@
 
     const chipIda = document.createElement('li');
     chipIda.className = 'chip';
-    chipIda.textContent = rota.hora_ida ? `saída ${rota.hora_ida}` : 'horário a combinar';
+
+    const horaIda = ((rota.hora_ida ?? '') + '').trim();
+    chipIda.textContent =
+      horaIda && horaIda !== 'null' && horaIda !== 'undefined'
+        ? `saída ${horaIda}`
+        : 'horário a combinar';
 
     const chipVolta = document.createElement('li');
     chipVolta.className = 'chip';
-    chipVolta.textContent = rota.hora_volta ? `chegada ${rota.hora_volta}` : 'sem volta';
+
+    const horaVolta = ((rota.hora_volta ?? '') + '').trim();
+    chipVolta.textContent =
+      horaVolta && horaVolta !== 'null' && horaVolta !== 'undefined'
+        ? `chegada ${horaVolta}`
+        : 'sem volta';
 
     lista.appendChild(chipIda);
     lista.appendChild(chipVolta);
@@ -160,6 +157,7 @@
 
     try {
       const rotas = await apiRequest('/api/rotas');
+      console.log('[initHomeRotas] rotas da API:', rotas);
 
       container.innerHTML = '';
 
@@ -308,8 +306,7 @@
           isForm: true,
         });
 
-        
-        saveAuth(data.access_token, data.usuario);
+        saveAuth(data.usuario);
         alert('Cadastro concluído!');
         location.assign('painel.html');
       } catch (err) {
@@ -340,8 +337,7 @@
           body: { email, senha },
         });
 
-        
-        saveAuth(data.access_token, data.usuario);
+        saveAuth(data.usuario);
         alert('Login realizado com sucesso!');
         location.assign('painel.html');
       } catch (err) {
@@ -435,18 +431,21 @@
         const horarios = document.createElement('div');
         horarios.className = 'horarios';
 
+        const horaIda = ((r.hora_ida ?? '') + '').trim();
+        const horaVolta = ((r.hora_volta ?? '') + '').trim();
+
         const hSaida = document.createElement('div');
         hSaida.className = 'horario';
         hSaida.innerHTML =
           '<span class="rotulo">Saída</span><strong class="hora">' +
-          (r.hora_ida || '-') +
+          (horaIda || '-') +
           '</strong>';
 
         const hChegada = document.createElement('div');
         hChegada.className = 'horario';
         hChegada.innerHTML =
           '<span class="rotulo">Chegada</span><strong class="hora">' +
-          (r.hora_volta || '-') +
+          (horaVolta || '-') +
           '</strong>';
 
         horarios.appendChild(hSaida);
@@ -458,10 +457,7 @@
         artigo.appendChild(header);
         artigo.appendChild(info);
 
-        container.insertBefore(
-          artigo,
-          msgSem || null
-        );
+        container.insertBefore(artigo, msgSem || null);
       });
 
       if (tituloLista) {
@@ -475,8 +471,10 @@
       try {
         const params = new URLSearchParams();
 
-        if (inputOrigem && inputOrigem.value) params.append('origem', inputOrigem.value);
-        if (inputDestino && inputDestino.value) params.append('destino', inputDestino.value);
+        if (inputOrigem && inputOrigem.value)
+          params.append('origem', inputOrigem.value);
+        if (inputDestino && inputDestino.value)
+          params.append('destino', inputDestino.value);
 
         let diaLabel = '';
         const chipAtivo = document.querySelector('.chip-dia.ativo');
@@ -488,6 +486,7 @@
 
         const qs = params.toString();
         const rotas = await apiRequest(`/api/rotas${qs ? `?${qs}` : ''}`);
+        console.log('[initRotas] rotas filtradas:', rotas);
         renderRotasLista(rotas, diaLabel);
       } catch (err) {
         console.error(err);
@@ -496,15 +495,11 @@
     }
 
     if (inputOrigem) {
-      inputOrigem.addEventListener('input', () => {
-        carregarRotas();
-      });
+      inputOrigem.addEventListener('input', carregarRotas);
     }
 
     if (inputDestino) {
-      inputDestino.addEventListener('input', () => {
-        carregarRotas();
-      });
+      inputDestino.addEventListener('input', carregarRotas);
     }
 
     chips.forEach((chip) => {
@@ -528,7 +523,7 @@
     carregarRotas();
   }
 
-  // ===================== PAINEL (SÓ MOTORISTA TEM LÓGICA) =====================
+  // ===================== PAINEL (APENAS MOTORISTA) =====================
 
   function renderRotasMotorista(rotas, container, msgVaziaEl) {
     if (!container) return;
@@ -563,7 +558,8 @@
       const dias = Array.isArray(r.dias_semana)
         ? r.dias_semana.join(', ')
         : r.dias_semana;
-      smallDiasHora.textContent = `${dias || ''} • ${r.hora_ida || ''}`;
+      const horaIda = ((r.hora_ida ?? '') + '').trim();
+      smallDiasHora.textContent = `${dias || ''} • ${horaIda || ''}`;
 
       const smallVagas = document.createElement('small');
       smallVagas.textContent = `Vagas: ${r.vagas}`;
@@ -613,9 +609,7 @@
     const msgSemViagensDia = document.getElementById('msg-sem-viagens-dia');
 
     try {
-      const resumo = await apiRequest('/api/motorista/resumo', {
-        auth: true,
-      });
+      const resumo = await apiRequest('/api/motorista/resumo');
       if (spanRotasAtivas) spanRotasAtivas.textContent = resumo.rotas_ativas;
       if (spanViagensHoje)
         spanViagensHoje.textContent = resumo.viagens_hoje;
@@ -626,9 +620,7 @@
     }
 
     try {
-      const rotas = await apiRequest('/api/motorista/minhas-rotas', {
-        auth: true,
-      });
+      const rotas = await apiRequest('/api/motorista/minhas-rotas');
       renderRotasMotorista(rotas, listaRotas, msgSemRotas);
     } catch (err) {
       console.error(err);
@@ -638,7 +630,6 @@
       listaRotas.addEventListener('click', async function (e) {
         const target = e.target;
 
-        // ----- EDITAR ROTA -----
         const btnEditar = target.closest
           ? target.closest('.btn-editar-rota')
           : null;
@@ -653,12 +644,10 @@
             return;
           }
 
-          
           window.location.href = `cadastroRotas.html?rotaId=${rotaId}`;
           return;
         }
 
-        // ----- EXCLUIR ROTA -----
         const btnExcluir = target.closest
           ? target.closest('.btn-excluir-rota')
           : null;
@@ -680,7 +669,6 @@
         try {
           await apiRequest('/api/motorista/rotas/' + rotaId, {
             method: 'DELETE',
-            auth: true,
           });
           item.remove();
           if (spanRotasAtivas) {
@@ -706,8 +694,7 @@
 
         try {
           const viagens = await apiRequest(
-            `/api/motorista/viagens?data=${dataSel}`,
-            { auth: true }
+            `/api/motorista/viagens?data=${dataSel}`
           );
 
           listaViagensDia.innerHTML = '';
@@ -760,9 +747,14 @@
       return;
     }
 
+    if (user.perfil !== 'motorista') {
+      alert('Por enquanto, o painel está disponível apenas para motoristas.');
+      location.href = 'index.html';
+      return;
+    }
+
     const nomeSpan = document.getElementById('nome-usuario');
     const textoTipo = document.getElementById('texto-tipo-usuario');
-    const blocoPassageiro = document.getElementById('bloco-passageiro');
     const blocoMotorista = document.getElementById('bloco-motorista');
     const btnSair = document.getElementById('btn-sair');
 
@@ -775,23 +767,16 @@
       btnSair.addEventListener('click', logout);
     }
 
-    if (user.perfil === 'estudante') {
-      
-      if (textoTipo) textoTipo.textContent = '';
-      if (blocoPassageiro) blocoPassageiro.style.display = 'block';
-      if (blocoMotorista) blocoMotorista.style.display = 'none';
-    } else if (user.perfil === 'motorista') {
-      if (textoTipo)
-        textoTipo.textContent =
-          'Aqui você vê as rotas que cadastrou e quantas reservas cada uma possui.';
-      if (blocoPassageiro) blocoPassageiro.style.display = 'none';
-      if (blocoMotorista) blocoMotorista.style.display = 'block';
-
-      carregarPainelMotorista();
+    if (textoTipo) {
+      textoTipo.textContent =
+        'Aqui você vê as rotas que cadastrou e quantas reservas cada uma possui.';
     }
-  }
+    if (blocoMotorista) {
+      blocoMotorista.style.display = 'block';
+    }
 
-  // ===================== INIT GLOBAL =====================
+    carregarPainelMotorista();
+  }
 
   ready(function () {
     const btnSairGlobal = document.getElementById('btn-sair');

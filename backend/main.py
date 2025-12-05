@@ -12,7 +12,6 @@ from fastapi import (
     Request,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer  
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -35,16 +34,14 @@ from schemas import (
     MotoristaResumo,
 )
 
-
-
+# =========================
 # CONFIG GERAL / AUTH
-
+# =========================
 
 SECRET_KEY = "Ablublé"
 ALGORITHM = "HS256"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")  
 
 origins = [
     "http://127.0.0.1:5500",
@@ -58,13 +55,15 @@ app = FastAPI(title="Van Já API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True, 
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-
+# =========================
+# HELPERS GERAIS
+# =========================
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
@@ -77,9 +76,16 @@ def verify_password(plain: str, hashed: str) -> bool:
 def create_access_token(sub: str, expires_delta: Optional[timedelta] = None):
     to_encode = {"sub": sub}
     expire = datetime.utcnow() + (expires_delta or timedelta(hours=8))
-    to_encode.update({"exp": expire})
+    to_encode["exp"] = expire
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+
+def salvar(db: Session, obj):
+    """Helper para add/commit/refresh."""
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
 
 
 def get_usuario_from_token(
@@ -110,21 +116,22 @@ def get_usuario_from_token(
     return user
 
 
-def get_motorista(user=Depends(get_usuario_from_token)):
-    if user.perfil != "motorista":
-        raise HTTPException(status_code=403, detail="Apenas motoristas")
-    return user
+def require_perfil(perfil: str):
+    """Dependency genérica para checar perfil."""
+    def _dep(user=Depends(get_usuario_from_token)):
+        if user.perfil != perfil:
+            raise HTTPException(status_code=403, detail=f"Apenas {perfil}s")
+        return user
+    return _dep
 
 
-def get_estudante(user=Depends(get_usuario_from_token)):
-    if user.perfil != "estudante":
-        raise HTTPException(status_code=403, detail="Apenas estudantes")
-    return user
+get_motorista = require_perfil("motorista")
+get_estudante = require_perfil("estudante")
 
 
+# =========================
 # HELPERS DE CONVERSÃO
-
-
+# =========================
 
 def rota_to_out(r: Rota) -> RotaOut:
     return RotaOut(
@@ -143,8 +150,7 @@ def rota_to_out(r: Rota) -> RotaOut:
 
 
 def viagem_to_out(v: Viagem) -> ViagemOut:
-    r = v.rota
-    rota_out = rota_to_out(r)
+    rota_out = rota_to_out(v.rota)
     return ViagemOut(
         id=v.id,
         rota=rota_out,
@@ -153,11 +159,9 @@ def viagem_to_out(v: Viagem) -> ViagemOut:
     )
 
 
-
-
+# =========================
 # ROTAS AUTH (LOGIN / CADASTRO)
-
-
+# =========================
 
 @app.post("/api/auth/register", response_model=Token)
 async def registrar_usuario(
@@ -180,19 +184,16 @@ async def registrar_usuario(
         cnh=cnh,
     )
 
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+    user = salvar(db, user)
 
     token = create_access_token(sub=str(user.id))
 
-    
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         samesite="lax",
-        max_age=60 * 60 * 8, 
+        max_age=60 * 60 * 8,
     )
 
     return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
@@ -211,13 +212,12 @@ def login(
 
     token = create_access_token(sub=str(user.id))
 
-    
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         samesite="lax",
-        max_age=60 * 60 * 8,  # 8 horas
+        max_age=60 * 60 * 8,
     )
 
     return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
@@ -229,10 +229,9 @@ def logout(response: Response):
     return {"message": "Logout realizado com sucesso"}
 
 
-
+# =========================
 # ROTAS USUÁRIO (CRUD)
-
-
+# =========================
 
 @app.get("/api/usuarios/me", response_model=UsuarioOut)
 def me(user=Depends(get_usuario_from_token)):
@@ -258,10 +257,7 @@ def atualizar_me(
     if dados.senha is not None and dados.senha.strip():
         user.senha_hash = hash_password(dados.senha)
 
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-
+    user = salvar(db, user)
     return UsuarioOut.model_validate(user)
 
 
@@ -282,13 +278,11 @@ def deletar_me(
     # apagar usuário
     db.delete(user)
     db.commit()
-    
 
 
-
+# =========================
 # ROTAS GERAIS (LISTAGEM DE ROTAS)
-
-
+# =========================
 
 @app.get("/api/rotas", response_model=List[RotaOut])
 def listar_rotas(
@@ -309,10 +303,9 @@ def listar_rotas(
     return [rota_to_out(r) for r in q.all()]
 
 
-
+# =========================
 # ROTAS MOTORISTA (CRUD DE ROTAS)
-
-
+# =========================
 
 @app.post("/api/motorista/rotas", response_model=RotaOut)
 def criar_rota(
@@ -335,10 +328,7 @@ def criar_rota(
         preco=rota.preco,
     )
 
-    db.add(r)
-    db.commit()
-    db.refresh(r)
-
+    r = salvar(db, r)
     return rota_to_out(r)
 
 
@@ -359,7 +349,7 @@ def obter_rota_motorista(
 ):
     rota = db.query(Rota).filter(
         Rota.id == rota_id,
-        Rota.motorista_id == motorista.id
+        Rota.motorista_id == motorista.id,
     ).first()
 
     if not rota:
@@ -377,7 +367,7 @@ def atualizar_rota(
 ):
     rota = db.query(Rota).filter(
         Rota.id == rota_id,
-        Rota.motorista_id == motorista.id
+        Rota.motorista_id == motorista.id,
     ).first()
 
     if not rota:
@@ -402,10 +392,7 @@ def atualizar_rota(
     if dados.preco is not None:
         rota.preco = dados.preco
 
-    db.add(rota)
-    db.commit()
-    db.refresh(rota)
-
+    rota = salvar(db, rota)
     return rota_to_out(rota)
 
 
@@ -417,7 +404,7 @@ def deletar_rota(
 ):
     rota = db.query(Rota).filter(
         Rota.id == rota_id,
-        Rota.motorista_id == motorista.id
+        Rota.motorista_id == motorista.id,
     ).first()
 
     if not rota:
@@ -441,12 +428,12 @@ def resumo_motorista(
 
     viagens_hoje = db.query(Viagem).join(Rota).filter(
         Rota.motorista_id == motorista.id,
-        Viagem.data == hoje
+        Viagem.data == hoje,
     ).count()
 
     alunos_hoje = db.query(Viagem.passageiro_id).join(Rota).filter(
         Rota.motorista_id == motorista.id,
-        Viagem.data == hoje
+        Viagem.data == hoje,
     ).distinct().count()
 
     return MotoristaResumo(
@@ -468,15 +455,13 @@ def viagens_motorista(
         q = q.filter(Viagem.data == data_ref)
 
     q = q.order_by(Viagem.data.asc())
-
     viagens = q.all()
     return [viagem_to_out(v) for v in viagens]
 
 
-
+# =========================
 # ROTAS PASSAGEIRO (CRUD DE VIAGENS)
-
-
+# =========================
 
 @app.post("/api/passageiro/viagens", response_model=ViagemOut)
 def reservar_viagem(
@@ -491,7 +476,7 @@ def reservar_viagem(
     reservas = db.query(Viagem).filter(
         Viagem.rota_id == rota.id,
         Viagem.data == data_in.data,
-        Viagem.status != "cancelada"
+        Viagem.status != "cancelada",
     ).count()
 
     if reservas >= rota.vagas:
@@ -500,13 +485,10 @@ def reservar_viagem(
     v = Viagem(
         rota_id=rota.id,
         passageiro_id=estudante.id,
-        data=data_in.data
+        data=data_in.data,
     )
 
-    db.add(v)
-    db.commit()
-    db.refresh(v)
-
+    v = salvar(db, v)
     return viagem_to_out(v)
 
 
@@ -520,7 +502,7 @@ def viagens_proximas(
     q = db.query(Viagem).join(Rota).filter(
         Viagem.passageiro_id == estudante.id,
         Viagem.data >= hoje,
-        Viagem.status != "cancelada"
+        Viagem.status != "cancelada",
     ).order_by(Viagem.data.asc())
 
     viagens = q.all()
@@ -536,7 +518,7 @@ def viagens_historico(
 
     q = db.query(Viagem).join(Rota).filter(
         Viagem.passageiro_id == estudante.id,
-        Viagem.data < hoje
+        Viagem.data < hoje,
     ).order_by(Viagem.data.desc())
 
     viagens = q.all()
@@ -552,7 +534,7 @@ def atualizar_viagem_passageiro(
 ):
     v = db.query(Viagem).filter(
         Viagem.id == viagem_id,
-        Viagem.passageiro_id == estudante.id
+        Viagem.passageiro_id == estudante.id,
     ).first()
 
     if not v:
@@ -561,10 +543,7 @@ def atualizar_viagem_passageiro(
     if dados.status is not None:
         v.status = dados.status
 
-    db.add(v)
-    db.commit()
-    db.refresh(v)
-
+    v = salvar(db, v)
     return viagem_to_out(v)
 
 
@@ -576,7 +555,7 @@ def deletar_viagem_passageiro(
 ):
     v = db.query(Viagem).filter(
         Viagem.id == viagem_id,
-        Viagem.passageiro_id == estudante.id
+        Viagem.passageiro_id == estudante.id,
     ).first()
 
     if not v:
