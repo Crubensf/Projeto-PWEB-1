@@ -34,9 +34,9 @@ from schemas import (
     MotoristaResumo,
 )
 
-# =========================
+
 # CONFIG GERAL / AUTH
-# =========================
+
 
 SECRET_KEY = "Ablublé"
 ALGORITHM = "HS256"
@@ -61,9 +61,9 @@ app.add_middleware(
 )
 
 
-# =========================
+
 # HELPERS GERAIS
-# =========================
+
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
@@ -81,7 +81,7 @@ def create_access_token(sub: str, expires_delta: Optional[timedelta] = None):
 
 
 def salvar(db: Session, obj):
-    """Helper para add/commit/refresh."""
+    
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -117,7 +117,7 @@ def get_usuario_from_token(
 
 
 def require_perfil(perfil: str):
-    """Dependency genérica para checar perfil."""
+    
     def _dep(user=Depends(get_usuario_from_token)):
         if user.perfil != perfil:
             raise HTTPException(status_code=403, detail=f"Apenas {perfil}s")
@@ -129,9 +129,9 @@ get_motorista = require_perfil("motorista")
 get_estudante = require_perfil("estudante")
 
 
-# =========================
+
 # HELPERS DE CONVERSÃO
-# =========================
+
 
 def rota_to_out(r: Rota) -> RotaOut:
     return RotaOut(
@@ -229,9 +229,9 @@ def logout(response: Response):
     return {"message": "Logout realizado com sucesso"}
 
 
-# =========================
+
 # ROTAS USUÁRIO (CRUD)
-# =========================
+
 
 @app.get("/api/usuarios/me", response_model=UsuarioOut)
 def me(user=Depends(get_usuario_from_token)):
@@ -280,9 +280,9 @@ def deletar_me(
     db.commit()
 
 
-# =========================
+
 # ROTAS GERAIS (LISTAGEM DE ROTAS)
-# =========================
+
 
 @app.get("/api/rotas", response_model=List[RotaOut])
 def listar_rotas(
@@ -303,9 +303,9 @@ def listar_rotas(
     return [rota_to_out(r) for r in q.all()]
 
 
-# =========================
+
 # ROTAS MOTORISTA (CRUD DE ROTAS)
-# =========================
+
 
 @app.post("/api/motorista/rotas", response_model=RotaOut)
 def criar_rota(
@@ -459,107 +459,6 @@ def viagens_motorista(
     return [viagem_to_out(v) for v in viagens]
 
 
-# =========================
-# ROTAS PASSAGEIRO (CRUD DE VIAGENS)
-# =========================
-
-@app.post("/api/passageiro/viagens", response_model=ViagemOut)
-def reservar_viagem(
-    data_in: ViagemCreate,
-    db: Session = Depends(get_db),
-    estudante: Usuario = Depends(get_estudante),
-):
-    rota = db.query(Rota).filter(Rota.id == data_in.rota_id).first()
-    if not rota:
-        raise HTTPException(status_code=404, detail="Rota não encontrada")
-
-    reservas = db.query(Viagem).filter(
-        Viagem.rota_id == rota.id,
-        Viagem.data == data_in.data,
-        Viagem.status != "cancelada",
-    ).count()
-
-    if reservas >= rota.vagas:
-        raise HTTPException(status_code=400, detail="Não há vagas disponíveis")
-
-    v = Viagem(
-        rota_id=rota.id,
-        passageiro_id=estudante.id,
-        data=data_in.data,
-    )
-
-    v = salvar(db, v)
-    return viagem_to_out(v)
 
 
-@app.get("/api/passageiro/viagens/proximas", response_model=List[ViagemOut])
-def viagens_proximas(
-    db: Session = Depends(get_db),
-    estudante: Usuario = Depends(get_estudante),
-):
-    hoje = date.today()
 
-    q = db.query(Viagem).join(Rota).filter(
-        Viagem.passageiro_id == estudante.id,
-        Viagem.data >= hoje,
-        Viagem.status != "cancelada",
-    ).order_by(Viagem.data.asc())
-
-    viagens = q.all()
-    return [viagem_to_out(v) for v in viagens]
-
-
-@app.get("/api/passageiro/viagens/historico", response_model=List[ViagemOut])
-def viagens_historico(
-    db: Session = Depends(get_db),
-    estudante: Usuario = Depends(get_estudante),
-):
-    hoje = date.today()
-
-    q = db.query(Viagem).join(Rota).filter(
-        Viagem.passageiro_id == estudante.id,
-        Viagem.data < hoje,
-    ).order_by(Viagem.data.desc())
-
-    viagens = q.all()
-    return [viagem_to_out(v) for v in viagens]
-
-
-@app.patch("/api/passageiro/viagens/{viagem_id}", response_model=ViagemOut)
-def atualizar_viagem_passageiro(
-    viagem_id: int,
-    dados: ViagemUpdate,
-    db: Session = Depends(get_db),
-    estudante: Usuario = Depends(get_estudante),
-):
-    v = db.query(Viagem).filter(
-        Viagem.id == viagem_id,
-        Viagem.passageiro_id == estudante.id,
-    ).first()
-
-    if not v:
-        raise HTTPException(status_code=404, detail="Viagem não encontrada")
-
-    if dados.status is not None:
-        v.status = dados.status
-
-    v = salvar(db, v)
-    return viagem_to_out(v)
-
-
-@app.delete("/api/passageiro/viagens/{viagem_id}", status_code=204)
-def deletar_viagem_passageiro(
-    viagem_id: int,
-    db: Session = Depends(get_db),
-    estudante: Usuario = Depends(get_estudante),
-):
-    v = db.query(Viagem).filter(
-        Viagem.id == viagem_id,
-        Viagem.passageiro_id == estudante.id,
-    ).first()
-
-    if not v:
-        raise HTTPException(status_code=404, detail="Viagem não encontrada")
-
-    db.delete(v)
-    db.commit()

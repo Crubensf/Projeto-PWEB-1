@@ -1,4 +1,4 @@
-# backend/db.py
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
@@ -22,5 +22,5 @@ def get_db():
         db.close()
 
 
-# Cria as tabelas quando o módulo for importado
+
 Base.metadata.create_all(bind=engine)
