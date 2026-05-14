@@ -1,35 +1,3 @@
-const API_BASE = 'http://127.0.0.1:8000';
-
-async function apiRequest(path, { method = 'GET', body = null } = {}) {
-  const url = `${API_BASE}${path}`;
-  const options = { method, headers: {}, credentials: 'include' };
-
-  if (body) {
-    options.headers['Content-Type'] = 'application/json';
-    options.body = JSON.stringify(body);
-  }
-
-  const resp = await fetch(url, options);
-  let data = null;
-
-  try { data = await resp.json(); } catch {}
-
-  if (!resp.ok) {
-    const msg = (data && (data.detail || data.message)) || `Erro HTTP ${resp.status}`;
-    throw new Error(msg);
-  }
-
-  return data;
-}
-
-function getUsuario() {
-  try {
-    const raw = localStorage.getItem('usuario');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
 
 document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('form-rota');
@@ -172,6 +140,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (subtituloPagina) subtituloPagina.textContent = 'Preencha os dados da sua rota.';
   }
 
+  const btnSubmitRota = form.querySelector('button[type="submit"]');
+
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -207,6 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
       preco: valor > 0 ? valor : 0
     };
 
+    if (btnSubmitRota) btnSubmitRota.disabled = true;
     try {
       const url = rotaEmEdicaoId
         ? '/api/motorista/rotas/' + rotaEmEdicaoId
@@ -215,13 +186,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const method = rotaEmEdicaoId ? 'PUT' : 'POST';
 
       await apiRequest(url, { method, body: rota });
-
-      if (rotaEmEdicaoId) alert('Rota atualizada com sucesso!');
-      else alert('Rota criada com sucesso!');
-
       window.location.href = 'painel.html';
     } catch (err) {
       alert('Erro ao salvar rota: ' + (err.message || ''));
+    } finally {
+      if (btnSubmitRota) btnSubmitRota.disabled = false;
     }
   });
 });

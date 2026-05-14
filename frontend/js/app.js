@@ -1,60 +1,7 @@
 (function () {
-  const API_BASE = 'http://127.0.0.1:8000';
-
   function ready(fn) {
     if (document.readyState !== 'loading') fn();
     else document.addEventListener('DOMContentLoaded', fn);
-  }
-
-  async function apiRequest(
-    path,
-    { method = 'GET', body = null, isForm = false } = {}
-  ) {
-    const url = `${API_BASE}${path}`;
-
-    const options = {
-      method,
-      headers: {},
-      credentials: 'include',
-    };
-
-    if (body) {
-      if (isForm) {
-        options.body = body;
-      } else {
-        options.headers['Content-Type'] = 'application/json';
-        options.body = JSON.stringify(body);
-      }
-    }
-
-    const resp = await fetch(url, options);
-    let data = null;
-
-    try {
-      data = await resp.json();
-    } catch {}
-
-    if (!resp.ok) {
-      const msg =
-        (data && (data.detail || data.message)) ||
-        `Erro HTTP ${resp.status}`;
-      throw new Error(msg);
-    }
-
-    return data;
-  }
-
-  function saveAuth(usuario) {
-    if (usuario) localStorage.setItem('usuario', JSON.stringify(usuario));
-  }
-
-  function getUsuario() {
-    try {
-      const raw = localStorage.getItem('usuario');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
   }
 
   async function logout() {
@@ -157,8 +104,6 @@
 
     try {
       const rotas = await apiRequest('/api/rotas');
-      console.log('[initHomeRotas] rotas da API:', rotas);
-
       container.innerHTML = '';
 
       if (!rotas || !rotas.length) {
@@ -269,6 +214,8 @@
       });
     }
 
+    const btnSubmitCad = form.querySelector('button[type="submit"]');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -299,6 +246,7 @@
         formData.set('perfil', 'estudante');
       }
 
+      if (btnSubmitCad) btnSubmitCad.disabled = true;
       try {
         const data = await apiRequest('/api/auth/register', {
           method: 'POST',
@@ -307,11 +255,12 @@
         });
 
         saveAuth(data.usuario);
-        alert('Cadastro concluído!');
         location.assign('painel.html');
       } catch (err) {
         console.error(err);
         alert('Erro ao cadastrar: ' + err.message);
+      } finally {
+        if (btnSubmitCad) btnSubmitCad.disabled = false;
       }
     });
   }
@@ -324,13 +273,21 @@
     );
     if (!form) return;
 
+    const btn = form.querySelector('button[type="submit"]');
+    const senhaWrap = form.querySelector('#senha')
+      ? form.querySelector('#senha').closest('.login-campo')
+      : null;
+    const msgGeral = senhaWrap ? senhaWrap.querySelector('.msg-erro') : null;
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (msgGeral) msgGeral.textContent = '';
 
       const d = new FormData(form);
       const email = d.get('email') || '';
       const senha = d.get('senha') || '';
 
+      if (btn) btn.disabled = true;
       try {
         const data = await apiRequest('/api/auth/login', {
           method: 'POST',
@@ -338,11 +295,13 @@
         });
 
         saveAuth(data.usuario);
-        alert('Login realizado com sucesso!');
         location.assign('painel.html');
       } catch (err) {
         console.error(err);
-        alert('Erro ao fazer login: ' + err.message);
+        if (msgGeral) msgGeral.textContent = err.message;
+        else alert('Erro ao fazer login: ' + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
       }
     });
   }
@@ -486,20 +445,25 @@
 
         const qs = params.toString();
         const rotas = await apiRequest(`/api/rotas${qs ? `?${qs}` : ''}`);
-        console.log('[initRotas] rotas filtradas:', rotas);
         renderRotasLista(rotas, diaLabel);
       } catch (err) {
         console.error(err);
-        alert('Erro ao carregar rotas: ' + err.message);
+        limparCards();
+        if (msgSem) {
+          msgSem.hidden = false;
+          msgSem.textContent = 'Erro ao carregar rotas. Tente novamente.';
+        }
       }
     }
 
+    const carregarRotasDebounced = debounce(carregarRotas, 400);
+
     if (inputOrigem) {
-      inputOrigem.addEventListener('input', carregarRotas);
+      inputOrigem.addEventListener('input', carregarRotasDebounced);
     }
 
     if (inputDestino) {
-      inputDestino.addEventListener('input', carregarRotas);
+      inputDestino.addEventListener('input', carregarRotasDebounced);
     }
 
     chips.forEach((chip) => {
@@ -608,22 +572,24 @@
     const listaViagensDia = document.getElementById('lista-viagens-dia');
     const msgSemViagensDia = document.getElementById('msg-sem-viagens-dia');
 
-    try {
-      const resumo = await apiRequest('/api/motorista/resumo');
+    const [resumoResult, rotasResult] = await Promise.allSettled([
+      apiRequest('/api/motorista/resumo'),
+      apiRequest('/api/motorista/minhas-rotas'),
+    ]);
+
+    if (resumoResult.status === 'fulfilled') {
+      const resumo = resumoResult.value;
       if (spanRotasAtivas) spanRotasAtivas.textContent = resumo.rotas_ativas;
-      if (spanViagensHoje)
-        spanViagensHoje.textContent = resumo.viagens_hoje;
-      if (spanAlunosHoje)
-        spanAlunosHoje.textContent = resumo.alunos_hoje;
-    } catch (err) {
-      console.error(err);
+      if (spanViagensHoje) spanViagensHoje.textContent = resumo.viagens_hoje;
+      if (spanAlunosHoje) spanAlunosHoje.textContent = resumo.alunos_hoje;
+    } else {
+      console.error(resumoResult.reason);
     }
 
-    try {
-      const rotas = await apiRequest('/api/motorista/minhas-rotas');
-      renderRotasMotorista(rotas, listaRotas, msgSemRotas);
-    } catch (err) {
-      console.error(err);
+    if (rotasResult.status === 'fulfilled') {
+      renderRotasMotorista(rotasResult.value, listaRotas, msgSemRotas);
+    } else {
+      console.error(rotasResult.reason);
     }
 
     if (listaRotas) {

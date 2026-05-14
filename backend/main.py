@@ -458,7 +458,3 @@ def viagens_motorista(
     viagens = q.all()
     return [viagem_to_out(v) for v in viagens]
 
-
-
-
-
