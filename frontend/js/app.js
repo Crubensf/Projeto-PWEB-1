@@ -45,6 +45,33 @@
     const article = document.createElement('article');
     article.className = 'cartao rota';
 
+    // Banner de paisagem com overlay de origem → destino
+    const banner = document.createElement('div');
+    banner.className = 'cartao-banner';
+    banner.setAttribute('aria-hidden', 'true');
+
+    const overlay = document.createElement('div');
+    overlay.className = 'cartao-banner-overlay';
+
+    const spanOrigem = document.createElement('span');
+    spanOrigem.className = 'cbo-origem';
+    spanOrigem.textContent = rota.origem;
+
+    const spanSeta = document.createElement('span');
+    spanSeta.className = 'cbo-seta';
+    spanSeta.setAttribute('aria-hidden', 'true');
+    spanSeta.textContent = '→';
+
+    const spanDestino = document.createElement('span');
+    spanDestino.className = 'cbo-destino';
+    spanDestino.textContent = rota.destino;
+
+    overlay.appendChild(spanOrigem);
+    overlay.appendChild(spanSeta);
+    overlay.appendChild(spanDestino);
+    banner.appendChild(overlay);
+    article.appendChild(banner);
+
     const titulo = document.createElement('h3');
     titulo.textContent = `${rota.origem} → ${rota.destino}`;
 

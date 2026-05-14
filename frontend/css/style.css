@@ -7,8 +7,8 @@
   color-scheme: light;
 
   /* ----- Surfaces & Ink ----- */
-  --bg: #FAFAF8;            /* warm off-white, less yellow */
-  --bg-tint: #F2F2EF;
+  --bg: #FEFCF8;            /* cream quente, evoca viagem */
+  --bg-tint: #FEF8F0;       /* tint âmbar suave */
   --bg-deep: #0B0F0E;       /* near-black with subtle green tint */
   --paper: #FFFFFF;
   --paper-2: #F7F7F4;
@@ -29,6 +29,14 @@
   --go-soft: #DCFCE7;       /* emerald-100 — chip background */
   --go-deep: #064E3B;       /* emerald-900 — hover */
   --go-glow: rgba(21, 128, 61, 0.18);
+
+  /* ----- Acento viagem: âmbar / dourado ----- */
+  --sun: #F59E0B;
+  --sun-soft: #FEF3C7;
+  --sun-deep: #B45309;
+  --sun-glow: rgba(245, 158, 11, 0.18);
+  --sky: #0EA5E9;
+  --sky-soft: #E0F2FE;
 
   /* ----- Estado ----- */
   --danger: #B91C1C;
@@ -187,23 +195,49 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
 }
 
 .botao-go {
-  background: var(--go);
+  background: #16A34A;
   color: var(--paper);
-  box-shadow: 0 6px 18px -6px var(--go-glow);
+  box-shadow: 0 10px 30px -8px rgba(22,163,74,0.6), 0 2px 6px rgba(0,0,0,0.12);
+  font-weight: 600;
 }
 .botao-go:hover {
-  background: var(--go-deep);
-  box-shadow: 0 10px 24px -6px var(--go-glow);
+  background: #15803D;
+  box-shadow: 0 14px 40px -8px rgba(22,163,74,0.7), 0 4px 10px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
 }
 
-.botao-suave,
 .botao-invertido {
   background: var(--paper);
   color: var(--ink);
   border-color: var(--line-strong);
 }
-.botao-suave:hover,
 .botao-invertido:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* Glass button para uso sobre fotos / dark surfaces */
+.faixa-principal .botao-suave {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border-color: rgba(255,255,255,0.28);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+}
+.faixa-principal .botao-suave:hover {
+  background: rgba(255,255,255,0.95);
+  color: var(--ink);
+  border-color: #fff;
+}
+
+/* Default botao-suave (fora do hero) */
+.botao-suave {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.botao-suave:hover {
   background: var(--ink);
   color: var(--paper);
   border-color: var(--ink);
@@ -294,15 +328,23 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
 .acoes-header { display: flex; gap: var(--space-2); align-items: center; }
 .acoes-header .botao { padding: 8px 16px; font-size: 0.875rem; }
 
-/* ===== HERO (split-screen asymmetric) ===== */
+/* ===== HERO (full-bleed cinematic photo) ===== */
 .faixa-principal {
   position: relative;
   padding: var(--space-8) 0 var(--space-9);
   overflow: hidden;
+  background: #0A1410;
+  min-height: 640px;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
 }
 
 @media (min-width: 900px) {
-  .faixa-principal { padding: var(--space-9) 0 var(--space-10); }
+  .faixa-principal {
+    padding: var(--space-9) 0 var(--space-10);
+    min-height: 720px;
+  }
 }
 
 .hero-grid {
@@ -319,55 +361,62 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
   }
 }
 
-.faixa-conteudo { max-width: 600px; }
+.faixa-conteudo {
+  max-width: 620px;
+  color: #fff;
+}
 
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 5px 10px 5px 6px;
-  background: var(--paper);
-  border: 1px solid var(--line);
+  padding: 5px 12px 5px 6px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.22);
   border-radius: var(--r-pill);
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--ink-muted);
+  color: rgba(255,255,255,0.92);
   margin-bottom: var(--space-5);
   letter-spacing: -0.005em;
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
 }
 
 .hero-eyebrow-tag {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  background: var(--go-soft);
-  color: var(--go-deep);
+  background: #22C55E;
+  color: #04220F;
   border-radius: var(--r-pill);
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 #titulo-principal {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(2.75rem, 6.5vw, 5rem);
   line-height: 1;
   font-weight: 600;
   letter-spacing: -0.04em;
   margin-bottom: var(--space-5);
-  color: var(--ink);
+  color: #fff;
+  text-shadow: 0 2px 28px rgba(0,0,0,0.35);
 }
 
 #titulo-principal .accent {
-  color: var(--go);
+  color: #FBBF24;
   font-weight: 600;
 }
 
 .texto-apoio {
-  font-size: clamp(1rem, 1.4vw, 1.125rem);
-  line-height: 1.5;
+  font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
+  line-height: 1.55;
   max-width: 540px;
-  color: var(--ink-muted);
+  color: rgba(255,255,255,0.86);
   margin-bottom: var(--space-5);
+  text-shadow: 0 1px 12px rgba(0,0,0,0.35);
 }
 
 .hero-acoes {
@@ -382,45 +431,91 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
 .hero-trust {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-6);
   margin-top: var(--space-6);
   padding-top: var(--space-5);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(255,255,255,0.18);
   flex-wrap: wrap;
 }
 
 .hero-trust-item {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .hero-trust-item .num {
   font-family: var(--font-mono);
-  font-size: 1.125rem;
+  font-size: 1.625rem;
   font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.02em;
+  color: #fff;
+  letter-spacing: -0.025em;
+  line-height: 1;
 }
 
 .hero-trust-item .lbl {
-  font-size: 0.8125rem;
-  color: var(--ink-muted);
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.02em;
 }
 
 /* ===== Hero booking preview card ===== */
 .hero-preview {
   position: relative;
-  min-height: 360px;
+  min-height: 380px;
 }
 
+/* ===== Foto cinematográfica full-bleed ===== */
+.hero-cenario {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url('../imagens/hero-van.png');
+  background-size: cover;
+  background-position: center 38%;
+  transform: scale(1.02);
+}
+
+/* Dark cinematic overlay para legibilidade e drama */
+.hero-cenario::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(105deg,
+      rgba(6,10,9,0.86) 0%,
+      rgba(6,10,9,0.72) 28%,
+      rgba(6,10,9,0.42) 52%,
+      rgba(6,10,9,0.12) 78%,
+      rgba(6,10,9,0.00) 100%
+    ),
+    linear-gradient(to bottom,
+      rgba(6,10,9,0.20) 0%,
+      transparent 35%,
+      rgba(6,10,9,0.55) 100%
+    );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Conteúdo acima da foto */
+.faixa-principal .caixa { position: relative; z-index: 2; }
+
 .preview-card {
-  background: var(--paper);
-  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.97);
+  border: 1px solid rgba(255,255,255,0.6);
   border-radius: var(--r-xl);
   padding: var(--space-5);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    0 30px 80px -20px rgba(0,0,0,0.55),
+    0 12px 28px -8px rgba(0,0,0,0.30),
+    0 2px 6px rgba(0,0,0,0.10),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   position: relative;
+  z-index: 1;
   overflow: hidden;
 }
 
@@ -649,7 +744,12 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
 
 /* ===== Seções ===== */
 .secao { padding: var(--space-9) 0; position: relative; }
-.secao.suave { background: var(--bg-tint); }
+.secao.suave {
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(245,158,11,0.10) 0%, transparent 45%),
+    radial-gradient(ellipse at 0% 100%, rgba(21,128,61,0.06) 0%, transparent 40%),
+    var(--bg-tint);
+}
 .secao.dark { background: var(--ink); color: var(--paper); }
 
 .secao-header {
@@ -727,36 +827,91 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
   flex-direction: column;
 }
 
+.cartao {
+  box-shadow: 0 2px 8px -2px rgba(11,15,14,0.06);
+}
+
 .cartao:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  box-shadow:
+    0 24px 48px -16px rgba(11,15,14,0.20),
+    0 8px 16px -8px rgba(11,15,14,0.10);
   border-color: var(--line-strong);
 }
 
-/* Mapa-like banner — gradient com linha de rota SVG */
-.cartao.rota::before {
-  content: '';
-  display: block;
+/* Banner de paisagem — céu, horizonte e caatinga */
+.cartao.rota .cartao-banner {
   aspect-ratio: 16 / 9;
-  background:
-    linear-gradient(180deg, transparent 50%, rgba(11, 15, 14, 0.4) 100%),
-    repeating-linear-gradient(135deg, transparent 0 14px, rgba(21, 128, 61, 0.06) 14px 15px),
-    linear-gradient(135deg, #1F2937 0%, #0B0F0E 100%);
   position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  /* Amanhecer: céu azul → dourado → verde */
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.30) 100%),
+    radial-gradient(ellipse at 72% 62%, rgba(253,224,71,0.75) 0%, rgba(249,115,22,0.4) 30%, transparent 60%),
+    linear-gradient(180deg,
+      #7DD3FC 0%,
+      #BAE6FD 32%,
+      #FDE68A 60%,
+      #15803D 60%,
+      #064E3B 100%
+    );
 }
 
-.cartao.rota:nth-child(3n+2)::before {
+/* Meio-dia: céu azul vivo */
+.cartao.rota:nth-child(3n+2) .cartao-banner {
   background:
-    linear-gradient(180deg, transparent 50%, rgba(11, 15, 14, 0.4) 100%),
-    repeating-linear-gradient(135deg, transparent 0 14px, rgba(21, 128, 61, 0.08) 14px 15px),
-    linear-gradient(135deg, #0B0F0E 0%, #15803D 130%);
+    linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 100%),
+    radial-gradient(circle at 52% 24%, rgba(255,255,255,0.30) 0%, transparent 40%),
+    radial-gradient(circle at 52% 24%, rgba(254,240,138,0.60) 0%, transparent 22%),
+    linear-gradient(180deg,
+      #0284C7 0%,
+      #38BDF8 38%,
+      #7DD3FC 60%,
+      #15803D 60%,
+      #064E3B 100%
+    );
 }
 
-.cartao.rota:nth-child(3n+3)::before {
+/* Entardecer: laranja / âmbar */
+.cartao.rota:nth-child(3n+3) .cartao-banner {
   background:
-    linear-gradient(180deg, transparent 50%, rgba(11, 15, 14, 0.4) 100%),
-    repeating-linear-gradient(135deg, transparent 0 14px, rgba(255, 255, 255, 0.04) 14px 15px),
-    linear-gradient(135deg, #374151 0%, #111827 100%);
+    linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.38) 100%),
+    radial-gradient(ellipse at 52% 55%, rgba(253,224,71,0.65) 0%, rgba(251,146,60,0.5) 28%, transparent 52%),
+    linear-gradient(180deg,
+      #FED7AA 0%,
+      #FB923C 32%,
+      #EA580C 52%,
+      #0F172A 57%,
+      #0B0F0E 100%
+    );
+}
+
+/* Overlay com origem → destino sobre o banner */
+.cartao-banner-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 10px 14px;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%);
+  gap: 5px;
+}
+
+.cbo-origem,
+.cbo-destino {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+}
+
+.cbo-seta {
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.75);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 .cartao.rota h3 {
@@ -878,18 +1033,38 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
 }
 
 .passo-ico {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--r-md);
+  border-radius: var(--r-lg);
   background: var(--bg-tint);
   color: var(--ink);
   border: 1px solid var(--line);
+  box-shadow: 0 8px 20px -8px rgba(11,15,14,0.12);
 }
 
-.passo-ico svg { width: 22px; height: 22px; stroke-width: 1.5; }
+/* Busca: azul céu / Reserva: âmbar / Chegada: verde */
+.passo:nth-child(1) .passo-ico {
+  background: var(--sky-soft);
+  color: var(--sky);
+  border-color: rgba(14, 165, 233, 0.15);
+}
+
+.passo:nth-child(2) .passo-ico {
+  background: var(--sun-soft);
+  color: var(--sun-deep);
+  border-color: rgba(245, 158, 11, 0.18);
+}
+
+.passo:nth-child(3) .passo-ico {
+  background: var(--go-soft);
+  color: var(--go-deep);
+  border-color: rgba(21, 128, 61, 0.15);
+}
+
+.passo-ico svg { width: 28px; height: 28px; stroke-width: 1.75; }
 
 .passo h3 {
   font-size: 1.1875rem;
