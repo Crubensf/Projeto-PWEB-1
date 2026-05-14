@@ -1,0 +1,269 @@
+/* Painel — Dashboard mobility tech, mono em todos os números */
+
+.page-painel { background: var(--bg); min-height: 100dvh; }
+
+#btn-sair { padding: 8px 16px; font-size: 0.875rem; }
+
+/* ===== Topo do painel ===== */
+.painel-topo {
+  padding: var(--space-8) 0 var(--space-6);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-7);
+}
+
+#titulo-painel {
+  font-family: var(--font-sans);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1.05;
+}
+
+#nome-usuario { color: var(--go); }
+
+#texto-tipo-usuario {
+  margin-top: var(--space-3);
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+  max-width: 600px;
+}
+
+/* ===== Blocos ===== */
+.bloco { margin-bottom: var(--space-7); }
+
+.bloco-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.bloco-header h3,
+.bloco h3 {
+  font-family: var(--font-sans);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.bloco-header .texto-apoio {
+  margin-top: 4px;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  max-width: 520px;
+}
+
+.titulo-secao {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+/* ===== Stats grid (sem cards over-boxed) ===== */
+.bloco-resumo .resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0;
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.card-resumo {
+  padding: var(--space-5) var(--space-4);
+  background: transparent;
+  border-right: 1px solid var(--line);
+  transition: background var(--t) var(--ease);
+}
+
+.card-resumo:last-child { border-right: none; }
+.card-resumo:hover { background: var(--paper-2); }
+
+.card-resumo .label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+
+.card-resumo strong {
+  font-family: var(--font-mono);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Listas de rotas/viagens ===== */
+.lista { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.item-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--space-4) var(--space-5);
+  transition: transform var(--t) var(--ease),
+              box-shadow var(--t) var(--ease),
+              border-color var(--t) var(--ease);
+  animation: fade-rise 400ms var(--ease) both;
+}
+
+@media (min-width: 768px) {
+  .item-card {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: var(--space-4) var(--space-5);
+  }
+}
+
+.item-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--line-strong);
+}
+
+.item-card .info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-card .info strong {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+
+.item-card .info small {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+.item-card .info-secundaria {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--r-pill);
+  background: var(--go-soft);
+  color: var(--go-deep);
+}
+
+.status.ativo::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--go);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.btn-editar-rota,
+.btn-excluir-rota {
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--t) var(--ease);
+}
+
+.btn-editar-rota:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.btn-excluir-rota {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 25%, var(--line));
+}
+
+.btn-excluir-rota:hover {
+  background: var(--danger);
+  color: var(--paper);
+  border-color: var(--danger);
+}
+
+/* ===== Filtro de data ===== */
+.filtro-data {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.filtro-data label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.filtro-data input[type="date"] {
+  padding: 9px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  transition: border-color var(--t) var(--ease);
+}
+
+.filtro-data input[type="date"]:focus {
+  outline: none;
+  border-color: var(--go);
+  box-shadow: 0 0 0 3px var(--go-glow);
+}
+
+/* ===== Mensagens vazias ===== */
+.mensagem-vazia {
+  text-align: center;
+  padding: var(--space-7) var(--space-5);
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+  background: var(--paper);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+}
+
+.oculto-visivelmente {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

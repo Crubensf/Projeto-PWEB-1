@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from typing import Optional, List
 
 from fastapi import (
@@ -13,6 +13,7 @@ from fastapi import (
 )
 from fastapi.middleware.cors import CORSMiddleware
 from jose import jwt, JWTError
+from jose.exceptions import ExpiredSignatureError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from pydantic import EmailStr
@@ -41,6 +42,36 @@ from schemas import (
 SECRET_KEY = "Ablublé"
 ALGORITHM = "HS256"
 
+# Cookie de autenticação — atributos centralizados
+COOKIE_NAME = "access_token"
+COOKIE_MAX_AGE = 60 * 60 * 8  # 8h, casa com a expiração do JWT
+COOKIE_SECURE = False  # true em produção (HTTPS); false em dev (HTTP local)
+COOKIE_SAMESITE = "lax"
+
+
+def set_auth_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        max_age=COOKIE_MAX_AGE,
+        path="/",
+    )
+
+
+def clear_auth_cookie(response: Response) -> None:
+    # Para o browser remover o cookie, os atributos precisam casar com os do set
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/",
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+    )
+
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 origins = [
@@ -56,9 +87,26 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept"],
+    max_age=3600,
 )
+
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    # Defesa contra MIME sniffing
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    # Clickjacking: API não deve ser embutida em frames
+    response.headers["X-Frame-Options"] = "DENY"
+    # Não vaza URL completa em referer para sites externos
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # Desabilita APIs sensíveis do browser que a API não precisa
+    response.headers["Permissions-Policy"] = (
+        "geolocation=(), camera=(), microphone=(), payment=()"
+    )
+    return response
 
 
 
@@ -73,9 +121,107 @@ def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 
+# Hash bcrypt fixo (não computado em runtime, evita disparar detecção do passlib
+# no import). Usado quando o email não existe para que `verify_password` rode
+# mesmo assim e proteja contra enumeração de emails via timing attack.
+_DUMMY_HASH = "$2b$12$KIXqq3yQ1OQ9Hg5cN1.lZuV4w6sTl9JzL7JzVlYxR4sV9N0wRzv5G"
+
+
+# ----- Validações de input -----
+
+PERFIS_VALIDOS = ("estudante", "motorista")
+MIN_SENHA = 6
+
+
+def validar_senha(senha: str) -> None:
+    if not senha or len(senha) < MIN_SENHA:
+        raise HTTPException(
+            status_code=400,
+            detail=f"A senha deve ter no mínimo {MIN_SENHA} caracteres.",
+        )
+
+
+def validar_perfil(perfil: str) -> None:
+    if perfil not in PERFIS_VALIDOS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Perfil inválido. Use um de: {', '.join(PERFIS_VALIDOS)}.",
+        )
+
+
+def validar_cnh(cnh: Optional[str]) -> None:
+    if not cnh or not cnh.isdigit() or len(cnh) != 11:
+        raise HTTPException(
+            status_code=400,
+            detail="CNH deve ter exatamente 11 dígitos numéricos.",
+        )
+
+
+# ----- Rate limiting de login (in-memory, single instance) -----
+
+MAX_TENTATIVAS = 5
+JANELA_TENTATIVAS_S = 15 * 60  # 15 min
+
+_tentativas_falhas: dict[str, list[datetime]] = {}
+
+
+def _limpar_tentativas_expiradas(email: str) -> list[datetime]:
+    agora = datetime.now(timezone.utc)
+    atuais = _tentativas_falhas.get(email, [])
+    atuais = [t for t in atuais if (agora - t).total_seconds() < JANELA_TENTATIVAS_S]
+    _tentativas_falhas[email] = atuais
+    return atuais
+
+
+def checar_rate_limit_login(email: str) -> None:
+    atuais = _limpar_tentativas_expiradas(email)
+    if len(atuais) >= MAX_TENTATIVAS:
+        raise HTTPException(
+            status_code=429,
+            detail="Muitas tentativas de login. Aguarde alguns minutos e tente novamente.",
+        )
+
+
+def registrar_falha_login(email: str) -> None:
+    _tentativas_falhas.setdefault(email, []).append(datetime.now(timezone.utc))
+
+
+def limpar_falhas_login(email: str) -> None:
+    _tentativas_falhas.pop(email, None)
+
+
+# ----- Rate limiting de cadastro por IP (anti-spam) -----
+
+MAX_REGISTROS_POR_IP = 5
+JANELA_REGISTRO_S = 60 * 60  # 1h
+
+_registros_por_ip: dict[str, list[datetime]] = {}
+
+
+def checar_rate_limit_registro(ip: str) -> None:
+    agora = datetime.now(timezone.utc)
+    atuais = _registros_por_ip.get(ip, [])
+    atuais = [t for t in atuais if (agora - t).total_seconds() < JANELA_REGISTRO_S]
+    _registros_por_ip[ip] = atuais
+    if len(atuais) >= MAX_REGISTROS_POR_IP:
+        raise HTTPException(
+            status_code=429,
+            detail="Muitos cadastros recentes desse endereço. Tente novamente mais tarde.",
+        )
+    atuais.append(agora)
+
+
+def get_client_ip(request: Request) -> str:
+    # Confia em X-Forwarded-For atrás de proxy reverso; senão usa o socket direto
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
 def create_access_token(sub: str, expires_delta: Optional[timedelta] = None):
     to_encode = {"sub": sub}
-    expire = datetime.utcnow() + (expires_delta or timedelta(hours=8))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(hours=8))
     to_encode["exp"] = expire
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -92,26 +238,40 @@ def get_usuario_from_token(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    cred_exc = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Não autenticado",
-    )
-
-    token = request.cookies.get("access_token")
+    token = request.cookies.get(COOKIE_NAME)
     if not token:
-        raise cred_exc
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Não autenticado",
+        )
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: Optional[str] = payload.get("sub")
-        if user_id is None:
-            raise cred_exc
+    except ExpiredSignatureError:
+        # Token expirou — frontend pode capturar este detail e redirecionar pro login
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sessão expirada",
+        )
     except JWTError:
-        raise cred_exc
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido",
+        )
+
+    user_id: Optional[str] = payload.get("sub")
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido",
+        )
 
     user = db.query(Usuario).filter(Usuario.id == int(user_id)).first()
     if user is None:
-        raise cred_exc
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não encontrado",
+        )
 
     return user
 
@@ -165,6 +325,7 @@ def viagem_to_out(v: Viagem) -> ViagemOut:
 
 @app.post("/api/auth/register", response_model=Token)
 async def registrar_usuario(
+    request: Request,
     response: Response,
     nome: str = Form(...),
     email: EmailStr = Form(...),
@@ -173,30 +334,30 @@ async def registrar_usuario(
     cnh: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
+    checar_rate_limit_registro(get_client_ip(request))
+
+    validar_perfil(perfil)
+    validar_senha(senha)
+    if perfil == "motorista":
+        validar_cnh(cnh)
+
     if db.query(Usuario).filter(Usuario.email == email).first():
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
 
     user = Usuario(
-        nome=nome,
+        nome=nome.strip(),
         email=email,
         senha_hash=hash_password(senha),
         perfil=perfil,
-        cnh=cnh,
+        cnh=cnh if perfil == "motorista" else None,
     )
 
     user = salvar(db, user)
 
     token = create_access_token(sub=str(user.id))
+    set_auth_cookie(response, token)
 
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        samesite="lax",
-        max_age=60 * 60 * 8,
-    )
-
-    return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
+    return Token(usuario=UsuarioOut.model_validate(user))
 
 
 @app.post("/api/auth/login", response_model=Token)
@@ -205,27 +366,35 @@ def login(
     response: Response,
     db: Session = Depends(get_db),
 ):
-    user = db.query(Usuario).filter(Usuario.email == data.email).first()
+    email_norm = (data.email or "").lower().strip()
 
-    if not user or not verify_password(data.senha, user.senha_hash):
+    checar_rate_limit_login(email_norm)
+
+    user = db.query(Usuario).filter(Usuario.email == email_norm).first()
+
+    # Sempre roda bcrypt, mesmo se o usuário não existir, para que o tempo
+    # de resposta não denuncie quais emails estão cadastrados (timing attack).
+    if user:
+        senha_valida = verify_password(data.senha, user.senha_hash)
+    else:
+        verify_password(data.senha, _DUMMY_HASH)
+        senha_valida = False
+
+    if not user or not senha_valida:
+        registrar_falha_login(email_norm)
         raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
+    limpar_falhas_login(email_norm)
+
     token = create_access_token(sub=str(user.id))
+    set_auth_cookie(response, token)
 
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        samesite="lax",
-        max_age=60 * 60 * 8,
-    )
-
-    return Token(access_token=token, usuario=UsuarioOut.model_validate(user))
+    return Token(usuario=UsuarioOut.model_validate(user))
 
 
 @app.post("/api/auth/logout")
 def logout(response: Response):
-    response.delete_cookie("access_token")
+    clear_auth_cookie(response)
     return {"message": "Logout realizado com sucesso"}
 
 
@@ -255,6 +424,7 @@ def atualizar_me(
     if dados.cnh is not None:
         user.cnh = dados.cnh
     if dados.senha is not None and dados.senha.strip():
+        validar_senha(dados.senha)
         user.senha_hash = hash_password(dados.senha)
 
     user = salvar(db, user)

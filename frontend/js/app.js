@@ -216,29 +216,67 @@
 
     const btnSubmitCad = form.querySelector('button[type="submit"]');
 
+    const nome = document.getElementById('nome');
+    const email = document.getElementById('email');
+    const aceite = document.getElementById('aceite');
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    function setErro(input, msg) {
+      if (!input) return;
+      const wrap = input.parentElement;
+      const m = wrap ? wrap.querySelector('.msg-erro') : null;
+      if (m) m.textContent = msg || '';
+      if (msg) input.setAttribute('aria-invalid', 'true');
+      else input.removeAttribute('aria-invalid');
+    }
+
+    // Limpa erro ao corrigir
+    [nome, email, senha, confirmar, perfil].forEach((el) => {
+      if (!el) return;
+      const ev = el.tagName === 'SELECT' ? 'change' : 'input';
+      el.addEventListener(ev, () => setErro(el, ''));
+    });
+
+    function validarCadastro() {
+      let ok = true;
+      let primeiroInvalido = null;
+      const fail = (input, msg) => {
+        setErro(input, msg);
+        if (!primeiroInvalido) primeiroInvalido = input;
+        ok = false;
+      };
+
+      if (nome && (nome.value.trim().length < 2 || nome.value.length > 120)) {
+        fail(nome, 'Informe seu nome completo (2–120 caracteres).');
+      }
+      if (email && !EMAIL_RE.test(email.value.trim())) {
+        fail(email, 'Informe um e-mail válido.');
+      }
+      if (senha && senha.value.length < 6) {
+        fail(senha, 'A senha deve ter no mínimo 6 caracteres.');
+      }
+      if (confirmar && senha && senha.value !== confirmar.value) {
+        fail(confirmar, 'As senhas não coincidem.');
+      }
+      if (perfil && !perfil.value) {
+        fail(perfil, 'Selecione um perfil.');
+      }
+      if (perfil && perfil.value === 'motorista' && cnh && !/^\d{11}$/.test(cnh.value)) {
+        fail(cnh, 'Informe os 11 dígitos da CNH (somente números).');
+      }
+      if (aceite && !aceite.checked) {
+        alert('Você precisa aceitar os Termos de Uso e a Política de Privacidade.');
+        ok = false;
+      }
+
+      if (!ok && primeiroInvalido) primeiroInvalido.focus();
+      return ok;
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (senha && confirmar && senha.value !== confirmar.value) {
-        if (msgConfirm) msgConfirm.textContent = 'As senhas não coincidem.';
-        confirmar.focus();
-        return;
-      }
-
-      if (perfil && perfil.value === 'motorista' && cnh) {
-        const wrap = cnh.parentElement;
-        const m = wrap ? wrap.querySelector('.msg-erro') : null;
-
-        if (!/^\d{11}$/.test(cnh.value)) {
-          if (m)
-            m.textContent =
-              'Informe os 11 dígitos da CNH (somente números).';
-          cnh.focus();
-          return;
-        } else if (m) {
-          m.textContent = '';
-        }
-      }
+      if (!validarCadastro()) return;
 
       const formData = new FormData(form);
 
@@ -274,18 +312,52 @@
     if (!form) return;
 
     const btn = form.querySelector('button[type="submit"]');
-    const senhaWrap = form.querySelector('#senha')
-      ? form.querySelector('#senha').closest('.login-campo')
-      : null;
+    const emailInput = form.querySelector('#email');
+    const senhaInput = form.querySelector('#senha');
+    const senhaWrap = senhaInput ? senhaInput.closest('.login-campo') : null;
     const msgGeral = senhaWrap ? senhaWrap.querySelector('.msg-erro') : null;
+    const emailWrap = emailInput ? emailInput.closest('.login-campo') : null;
+    const msgEmail = emailWrap ? emailWrap.querySelector('.msg-erro') : null;
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    function setLoginErro(input, msgEl, msg) {
+      if (msgEl) msgEl.textContent = msg || '';
+      if (input) {
+        if (msg) input.setAttribute('aria-invalid', 'true');
+        else input.removeAttribute('aria-invalid');
+      }
+    }
+
+    if (emailInput) {
+      emailInput.addEventListener('input', () =>
+        setLoginErro(emailInput, msgEmail, '')
+      );
+    }
+    if (senhaInput) {
+      senhaInput.addEventListener('input', () =>
+        setLoginErro(senhaInput, msgGeral, '')
+      );
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (msgGeral) msgGeral.textContent = '';
+      setLoginErro(emailInput, msgEmail, '');
+      setLoginErro(senhaInput, msgGeral, '');
 
       const d = new FormData(form);
-      const email = d.get('email') || '';
-      const senha = d.get('senha') || '';
+      const email = (d.get('email') || '').toString().trim();
+      const senha = (d.get('senha') || '').toString();
+
+      if (!EMAIL_RE.test(email)) {
+        setLoginErro(emailInput, msgEmail, 'Informe um e-mail válido.');
+        if (emailInput) emailInput.focus();
+        return;
+      }
+      if (!senha) {
+        setLoginErro(senhaInput, msgGeral, 'Informe sua senha.');
+        if (senhaInput) senhaInput.focus();
+        return;
+      }
 
       if (btn) btn.disabled = true;
       try {
@@ -298,7 +370,7 @@
         location.assign('painel.html');
       } catch (err) {
         console.error(err);
-        if (msgGeral) msgGeral.textContent = err.message;
+        if (msgGeral) setLoginErro(senhaInput, msgGeral, err.message);
         else alert('Erro ao fazer login: ' + err.message);
       } finally {
         if (btn) btn.disabled = false;

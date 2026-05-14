@@ -74,6 +74,19 @@ async function apiRequest(path, { method = 'GET', body = null, isForm = false } 
     if (!resp.ok) {
       const msg =
         (data && (data.detail || data.message)) || `Erro HTTP ${resp.status}`;
+
+      // Sessão expirou — limpa auth local e manda pro login (uma única vez)
+      if (
+        resp.status === 401 &&
+        msg === 'Sessão expirada' &&
+        !window._sessaoExpiradaRedirecionando
+      ) {
+        window._sessaoExpiradaRedirecionando = true;
+        clearAuth();
+        alert('Sua sessão expirou. Faça login novamente.');
+        window.location.href = 'login.html';
+      }
+
       throw new Error(msg);
     }
 

@@ -58,20 +58,119 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Mapa de campos -> elemento input (usado para aria-invalid)
+  const inputsPorCampo = {
+    nome: inputNome,
+    origem: inputOrigem,
+    destino: inputDestino,
+    partida: inputPartida,
+    vagas: inputVagas,
+    preco: inputPrecoVis,
+    veiculo: selectVeiculo,
+    imagem: inputImagem,
+  };
+
   function err(field, msg) {
     const el = form.querySelector('[data-err-for="' + field + '"]');
     if (el) el.textContent = msg || '';
+    const input = inputsPorCampo[field];
+    if (input) {
+      if (msg) input.setAttribute('aria-invalid', 'true');
+      else input.removeAttribute('aria-invalid');
+    }
+  }
+
+  function limparErros() {
+    ['nome', 'origem', 'destino', 'partida', 'vagas', 'preco', 'veiculo', 'dias', 'imagem']
+      .forEach((f) => err(f, ''));
   }
 
   function validaImagem() {
     if (!inputImagem || !inputImagem.files || !inputImagem.files[0]) return true;
     const f = inputImagem.files[0];
     if (f.size > 5 * 1024 * 1024) {
-      alert('Imagem muito grande.');
+      err('imagem', 'Imagem muito grande. Máximo 5 MB.');
       return false;
     }
     return true;
   }
+
+  // Validação completa antes de enviar
+  function validarFormulario() {
+    limparErros();
+    let ok = true;
+    let primeiroInvalido = null;
+
+    function invalida(campo, msg) {
+      err(campo, msg);
+      if (!primeiroInvalido && inputsPorCampo[campo]) {
+        primeiroInvalido = inputsPorCampo[campo];
+      }
+      ok = false;
+    }
+
+    const nome = inputNome ? inputNome.value.trim() : '';
+    if (nome.length < 2) invalida('nome', 'Informe um nome com pelo menos 2 caracteres.');
+    else if (nome.length > 120) invalida('nome', 'Nome muito longo (máx 120 caracteres).');
+
+    const origem = inputOrigem ? inputOrigem.value.trim() : '';
+    if (origem.length < 2) invalida('origem', 'Informe a origem.');
+    else if (origem.length > 120) invalida('origem', 'Origem muito longa (máx 120 caracteres).');
+
+    const destino = inputDestino ? inputDestino.value.trim() : '';
+    if (destino.length < 2) invalida('destino', 'Informe o destino.');
+    else if (destino.length > 120) invalida('destino', 'Destino muito longo (máx 120 caracteres).');
+
+    const horaIda = inputPartida ? inputPartida.value : '';
+    if (!/^\d{2}:\d{2}$/.test(horaIda)) invalida('partida', 'Informe a hora de partida.');
+
+    const vagasVal = inputVagas ? Number(inputVagas.value) : 0;
+    if (!Number.isInteger(vagasVal) || vagasVal < 1 || vagasVal > 99) {
+      invalida('vagas', 'Vagas deve ser um número entre 1 e 99.');
+    }
+
+    const veiculoVal = selectVeiculo ? selectVeiculo.value : '';
+    if (!veiculoVal) invalida('veiculo', 'Selecione um tipo de veículo.');
+
+    const precoTexto = (inputPrecoVis && inputPrecoVis.value) || '';
+    const precoVal = parseBRLToNumber(precoTexto);
+    if (precoVal <= 0) invalida('preco', 'Informe o preço por assento.');
+    else if (precoVal > 10000) invalida('preco', 'Preço fora da faixa permitida.');
+
+    const diasSelecionados = form.querySelectorAll('input[name="dias"]:checked');
+    if (diasSelecionados.length === 0) {
+      invalida('dias', 'Selecione pelo menos um dia da semana.');
+    }
+
+    if (!validaImagem()) {
+      if (!primeiroInvalido) primeiroInvalido = inputImagem;
+      ok = false;
+    }
+
+    if (!ok && primeiroInvalido) primeiroInvalido.focus();
+    return ok;
+  }
+
+  // Real-time: limpa o erro do campo assim que o usuário corrige
+  function ligarLimpezaErro(input, campo) {
+    if (!input) return;
+    const ev = input.type === 'checkbox' || input.tagName === 'SELECT' ? 'change' : 'input';
+    input.addEventListener(ev, () => err(campo, ''));
+  }
+
+  ligarLimpezaErro(inputNome, 'nome');
+  ligarLimpezaErro(inputOrigem, 'origem');
+  ligarLimpezaErro(inputDestino, 'destino');
+  ligarLimpezaErro(inputPartida, 'partida');
+  ligarLimpezaErro(inputVagas, 'vagas');
+  ligarLimpezaErro(inputPrecoVis, 'preco');
+  ligarLimpezaErro(selectVeiculo, 'veiculo');
+  ligarLimpezaErro(inputImagem, 'imagem');
+
+  // Limpa erro de "dias" quando qualquer checkbox muda
+  form.querySelectorAll('input[name="dias"]').forEach((chk) => {
+    chk.addEventListener('change', () => err('dias', ''));
+  });
 
   const listaParadas = document.getElementById('listaParadas');
   const addParadaBtn = document.getElementById('addParada');
@@ -145,21 +244,18 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    ['nome', 'origem', 'destino', 'partida', 'vagas', 'preco', 'dias'].forEach(f => err(f, ''));
+    if (!validarFormulario()) return;
 
-    if (!validaImagem()) return;
-
-    const nome = inputNome ? inputNome.value.trim() : '';
-    const origem = inputOrigem ? inputOrigem.value.trim() : '';
-    const destino = inputDestino ? inputDestino.value.trim() : '';
-    const horaIda = inputPartida ? inputPartida.value : '';
+    const nome = inputNome.value.trim();
+    const origem = inputOrigem.value.trim();
+    const destino = inputDestino.value.trim();
+    const horaIda = inputPartida.value;
     const horaVolta = inputRetorno ? inputRetorno.value : '';
-    const vagas = inputVagas ? Number(inputVagas.value || 0) : 0;
-    const veiculo = selectVeiculo ? selectVeiculo.value : '';
+    const vagas = Number(inputVagas.value);
+    const veiculo = selectVeiculo.value;
 
-    let precoTexto = (inputPrecoVis && inputPrecoVis.value) || '';
-    const valor = parseBRLToNumber(precoTexto);
-    if (inputPreco) inputPreco.value = valor > 0 ? String(valor) : '0';
+    const valor = parseBRLToNumber(inputPrecoVis.value);
+    if (inputPreco) inputPreco.value = String(valor);
 
     const dias = Array.from(
       form.querySelectorAll('input[name="dias"]:checked')

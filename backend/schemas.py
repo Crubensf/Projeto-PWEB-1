@@ -1,16 +1,22 @@
 
 from datetime import datetime, date
-from typing import Optional, List
+from typing import Optional, List, Literal
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
+
+
+# Padrões de validação reusados
+HORA_PATTERN = r"^\d{2}:\d{2}$"
+Perfil = Literal["estudante", "motorista"]
+DiaSemana = Literal["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
 
 
 # ============ USUÁRIO ============
 
 class UsuarioBase(BaseModel):
-    nome: str
-    email: EmailStr
-    perfil: str
+    nome: str = Field(..., min_length=2, max_length=120)
+    email: EmailStr = Field(..., max_length=120)
+    perfil: Perfil
 
 
 class UsuarioOut(UsuarioBase):
@@ -18,43 +24,44 @@ class UsuarioOut(UsuarioBase):
     created_at: datetime
 
     class Config:
-        from_attributes = True  
+        from_attributes = True
 
 
 class UsuarioCreate(UsuarioBase):
-    senha: str
-    cnh: Optional[str] = None
+    senha: str = Field(..., min_length=6, max_length=200)
+    cnh: Optional[str] = Field(None, pattern=r"^\d{11}$")
 
 
 class UsuarioUpdate(BaseModel):
-    nome: Optional[str] = None
-    email: Optional[EmailStr] = None
-    senha: Optional[str] = None
-    cnh: Optional[str] = None
+    nome: Optional[str] = Field(None, min_length=2, max_length=120)
+    email: Optional[EmailStr] = Field(None, max_length=120)
+    senha: Optional[str] = Field(None, min_length=6, max_length=200)
+    cnh: Optional[str] = Field(None, pattern=r"^\d{11}$")
 
 
 class LoginData(BaseModel):
-    email: EmailStr
-    senha: str
+    email: EmailStr = Field(..., max_length=120)
+    senha: str = Field(..., min_length=1, max_length=200)
 
 
 class Token(BaseModel):
-    access_token: str
+    # O token JWT vai exclusivamente no cookie HttpOnly — não retorna no body
+    # para preservar a garantia do HttpOnly (token inacessível ao JavaScript).
     usuario: UsuarioOut
 
 
 # ============ ROTAS / ROTAS (MOTORISTA) ============
 
 class RotaBase(BaseModel):
-    nome: str
-    origem: str
-    destino: str
-    hora_ida: str
-    hora_volta: Optional[str] = None
-    vagas: int
-    veiculo: Optional[str] = None
-    dias_semana: List[str]
-    preco: float
+    nome: str = Field(..., min_length=2, max_length=120)
+    origem: str = Field(..., min_length=2, max_length=120)
+    destino: str = Field(..., min_length=2, max_length=120)
+    hora_ida: str = Field(..., pattern=HORA_PATTERN)
+    hora_volta: Optional[str] = Field(None, pattern=HORA_PATTERN)
+    vagas: int = Field(..., ge=1, le=99)
+    veiculo: Optional[str] = Field(None, max_length=30)
+    dias_semana: List[DiaSemana] = Field(..., min_length=1, max_length=7)
+    preco: float = Field(..., ge=0, le=10000)
 
 
 class RotaCreate(RotaBase):
@@ -62,15 +69,15 @@ class RotaCreate(RotaBase):
 
 
 class RotaUpdate(BaseModel):
-    nome: Optional[str] = None
-    origem: Optional[str] = None
-    destino: Optional[str] = None
-    hora_ida: Optional[str] = None
-    hora_volta: Optional[str] = None
-    vagas: Optional[int] = None
-    veiculo: Optional[str] = None
-    dias_semana: Optional[List[str]] = None
-    preco: Optional[float] = None
+    nome: Optional[str] = Field(None, min_length=2, max_length=120)
+    origem: Optional[str] = Field(None, min_length=2, max_length=120)
+    destino: Optional[str] = Field(None, min_length=2, max_length=120)
+    hora_ida: Optional[str] = Field(None, pattern=HORA_PATTERN)
+    hora_volta: Optional[str] = Field(None, pattern=HORA_PATTERN)
+    vagas: Optional[int] = Field(None, ge=1, le=99)
+    veiculo: Optional[str] = Field(None, max_length=30)
+    dias_semana: Optional[List[DiaSemana]] = Field(None, min_length=1, max_length=7)
+    preco: Optional[float] = Field(None, ge=0, le=10000)
 
 
 class RotaOut(RotaBase):

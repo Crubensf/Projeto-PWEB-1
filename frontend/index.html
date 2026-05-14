@@ -2,134 +2,321 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' http://127.0.0.1:8000 http://localhost:8000; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Van Já — Rotas Universitárias</title>
+  <title>Van Já — Rotas universitárias em tempo real</title>
 
-  <!-- Fonte -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="stylesheet" href="./css/style.css?v=3" />
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="cabecalho-site" role="banner">
     <div class="caixa caixa--header linha-cabecalho">
-
-      <!-- LOGO -->
       <a class="marca" href="index.html" aria-label="Van Já — Página inicial">
-        <img src="imagens/van.png" alt="Ícone de Van" class="icone-van">
-        Van Já
+        <span class="marca-ponto" aria-hidden="true"></span>
+        Van&nbsp;Já
       </a>
 
-      <!-- NAVEGAÇÃO -->
       <nav class="navegacao" aria-label="Principal">
-        <a href="#rotas">Rotas</a>
+        <a href="rotas.html">Rotas</a>
+        <a href="#funciona">Como funciona</a>
         <a href="#ajuda">Ajuda</a>
       </nav>
 
-      <!-- AÇÕES -->
       <div class="acoes-header">
-  <a class="botao botao-invertido" href="login.html" id="btn-login-link">Login</a>
-  <a class="botao botao-primario" href="cadastrar.html" id="btn-cadastrar-link">Cadastrar</a>
-
-  <!-- Botão de painel (aparece pra qualquer usuário logado) -->
-  <a
-    id="btn-painel-usuario"
-    class="botao botao-primario"
-    href="painel.html"
-    style="display:none"
-  >
-    Meu painel
-  </a>
-</div>
-
-
+        <a class="botao botao-ghost" href="login.html" id="btn-login-link">Entrar</a>
+        <a class="botao botao-primario" href="cadastrar.html" id="btn-cadastrar-link">Cadastrar</a>
+        <a id="btn-painel-usuario" class="botao botao-primario" href="painel.html" style="display:none">Meu painel</a>
+      </div>
     </div>
   </header>
 
-  <!-- CONTEÚDO -->
   <main id="conteudo">
 
-    <!-- HERO -->
+    <!-- HERO ===================================================== -->
     <section class="faixa-principal" aria-labelledby="titulo-principal">
-      <div class="caixa faixa-conteudo">
-        <h1 id="titulo-principal">Facilite sua locomoção até a universidade</h1>
-        <p class="texto-apoio">
-          O Van Já conecta estudantes às rotas universitárias diárias de forma rápida,
-          segura e acessível. Encontre a van ideal e chegue ao campus sem preocupações.
-        </p>
-        <a class="botao botao-primario" href="rotas.html">Ver rotas disponíveis</a>
+      <div class="caixa">
+        <div class="hero-grid">
+
+          <div class="faixa-conteudo">
+            <span class="hero-eyebrow">
+              <span class="hero-eyebrow-tag">NOVO</span>
+              Reservas em tempo real
+            </span>
+            <h1 id="titulo-principal">
+              Sua van até o<br>
+              campus em <span class="accent">3 toques.</span>
+            </h1>
+            <p class="texto-apoio">
+              Encontre, reserve e acompanhe rotas universitárias verificadas.
+              Sem dor de cabeça com horários, sem grupos de WhatsApp.
+            </p>
+            <div class="hero-acoes">
+              <a class="botao botao-go" href="rotas.html">
+                Buscar rotas
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <a class="botao botao-suave" href="cadastrar.html">Sou motorista</a>
+            </div>
+
+            <div class="hero-trust">
+              <div class="hero-trust-item">
+                <span class="num">120+</span>
+                <span class="lbl">rotas ativas</span>
+              </div>
+              <div class="hero-trust-item">
+                <span class="num">4.9</span>
+                <span class="lbl">avaliação média</span>
+              </div>
+              <div class="hero-trust-item">
+                <span class="num">2.1k</span>
+                <span class="lbl">estudantes ativos</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking preview card -->
+          <div class="hero-preview">
+            <div class="preview-card" aria-hidden="true">
+              <div class="preview-header">
+                <span class="preview-label">Próxima partida</span>
+                <span class="preview-status">Confirmada</span>
+              </div>
+
+              <div class="preview-route">
+                <div class="preview-cidade">
+                  <span class="nome">Picos</span>
+                  <span class="hora">06:30</span>
+                </div>
+                <div class="preview-arrow"></div>
+                <div class="preview-cidade" style="text-align:right">
+                  <span class="nome">UFPI</span>
+                  <span class="hora">07:45</span>
+                </div>
+              </div>
+
+              <div class="preview-info">
+                <div class="preview-info-item">
+                  <span class="lbl">Duração</span>
+                  <span class="val">1h15</span>
+                </div>
+                <div class="preview-info-item">
+                  <span class="lbl">Vagas</span>
+                  <span class="val">8 / 14</span>
+                </div>
+                <div class="preview-info-item">
+                  <span class="lbl">Veículo</span>
+                  <span class="val">Van</span>
+                </div>
+              </div>
+
+              <div class="preview-rodape">
+                <div class="preview-preco">
+                  <span class="lbl">total</span>
+                  <span class="val">R$ 16,00</span>
+                </div>
+                <a class="botao botao-primario" href="rotas.html">Reservar</a>
+              </div>
+            </div>
+
+            <div class="preview-mini mini-1">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <path d="M12 6v6l4 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                  <circle cx="12" cy="12" r="9" stroke-width="2"/>
+                </svg>
+              </span>
+              <div>
+                <strong>Sai em 12 min</strong>
+                <br><span>ponto Av. Sen. Helvídio</span>
+              </div>
+            </div>
+
+            <div class="preview-mini mini-2">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/>
+                </svg>
+              </span>
+              <div>
+                <strong>Motorista verificado</strong>
+                <br><span>CNH em dia</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </section>
 
-    <!-- ROTAS EM DESTAQUE -->
+    <!-- ROTAS EM DESTAQUE ======================================== -->
     <section id="rotas" class="secao" aria-labelledby="titulo-rotas">
       <div class="caixa">
-        <h2 id="titulo-rotas" class="titulo-secao">Rotas em Destaque</h2>
+        <div class="secao-header">
+          <div>
+            <span class="secao-rotulo">Em alta</span>
+            <h2 id="titulo-rotas" class="titulo-secao">
+              Rotas que estão <span class="accent">bombando</span> esta semana
+            </h2>
+          </div>
+          <p class="secao-sub">
+            As trajetórias mais reservadas pelos estudantes nos últimos 7 dias.
+          </p>
+        </div>
 
         <div class="grade-cartoes tres-colunas" id="destaque-rotas">
           <!-- JS carrega aqui -->
         </div>
 
         <p class="mais">
-          <a class="link" href="rotas.html">Ver todas as rotas disponíveis</a>
+          <a class="link" href="rotas.html">
+            Ver todas as rotas
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" width="14" height="14">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"/>
+            </svg>
+          </a>
         </p>
       </div>
     </section>
 
-    <!-- FAQ -->
-    <section id="ajuda" class="secao suave" aria-labelledby="titulo-faq">
+    <!-- COMO FUNCIONA — zigzag asymmetric ===================== -->
+    <section id="funciona" class="secao suave" aria-labelledby="titulo-funciona">
       <div class="caixa">
-        <h2 id="titulo-faq" class="titulo-secao">Perguntas Frequentes</h2>
+        <div class="secao-header">
+          <div>
+            <span class="secao-rotulo">Simples assim</span>
+            <h2 id="titulo-funciona" class="titulo-secao">
+              Três toques entre você e <span class="accent">a próxima carona.</span>
+            </h2>
+          </div>
+        </div>
+
+        <div class="passos">
+          <article class="passo">
+            <span class="passo-num">01</span>
+            <div class="passo-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+                <path d="M21 21l-4.35-4.35" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3>Busque sua rota</h3>
+            <p>Digite origem, destino ou filtre por dia. Você vê apenas as vans que servem o seu trajeto, em tempo real.</p>
+          </article>
+
+          <article class="passo">
+            <span class="passo-num">02</span>
+            <div class="passo-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M8 3v4M16 3v4M3 11h18"/>
+              </svg>
+            </div>
+            <h3>Reserve seu lugar</h3>
+            <p>Vagas, horários e preço aparecem antes de confirmar. Sem surpresas, sem grupos de WhatsApp.</p>
+          </article>
+
+          <article class="passo">
+            <span class="passo-num">03</span>
+            <div class="passo-ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
+            </div>
+            <h3>Chegue tranquilo</h3>
+            <p>Motorista verificado, ponto de encontro no mapa, contato direto se precisar de qualquer ajuste.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ ===================================================== -->
+    <section id="ajuda" class="secao" aria-labelledby="titulo-faq">
+      <div class="caixa">
+        <div class="secao-header">
+          <div>
+            <span class="secao-rotulo">Dúvidas frequentes</span>
+            <h2 id="titulo-faq" class="titulo-secao">
+              O que você precisa saber<br>
+              antes de <span class="accent">embarcar.</span>
+            </h2>
+          </div>
+        </div>
 
         <div class="grade-faq">
-
           <details class="item-faq">
             <summary>Como faço o pagamento?</summary>
-            <p>Pix, espécie ou cartão.</p>
+            <p>Pix, espécie ou cartão — combinado direto com o motorista no embarque. Sem taxa de plataforma escondida.</p>
           </details>
 
           <details class="item-faq">
             <summary>As vans são pontuais?</summary>
-            <p>Sim. Acompanhamos horários e mantemos contato direto com os motoristas.</p>
+            <p>98,2% das viagens saíram no horário nos últimos 30 dias. Acompanhamos cada motorista e o status fica visível antes da viagem.</p>
           </details>
 
           <details class="item-faq">
             <summary>É seguro viajar de van?</summary>
-            <p>
-              Os motoristas são verificados e as vans mantêm a manutenção em dia.
-              Wi-Fi e ar-condicionado em grande parte da frota.
-            </p>
+            <p>Todos os motoristas precisam validar CNH e documentação do veículo antes de cadastrar uma rota. Maioria da frota tem Wi-Fi, ar-condicionado e seguro em dia.</p>
+          </details>
+
+          <details class="item-faq">
+            <summary>E se a van não aparecer?</summary>
+            <p>Suporte aciona outro motorista na sua rota imediatamente. Você não fica sem alternativa.</p>
           </details>
 
           <figure class="depoimento">
-            <img class="avatar" src="" alt="Foto de estudante" />
+            <div class="avatar" aria-hidden="true">MR</div>
             <figcaption>
               <p class="citacao">
-                Chego à aula no horário e com segurança. Economia e conforto todo mês.
+                Chego à aula no horário, sem stress de ônibus lotado.
+                Já economizei mais de R$ 320 só este semestre.
               </p>
-              <span class="autor">Estudante, UFPI</span>
+              <span class="autor">Marina R. · 4º período · UFPI Picos</span>
             </figcaption>
           </figure>
-
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- RODAPÉ -->
   <footer class="rodape-site" role="contentinfo">
     <div class="caixa">
-      <p>© 2025 Van Já. Todos os direitos reservados.</p>
+      <div class="rodape-grid">
+        <div>
+          <div class="rodape-marca">
+            <span class="marca-ponto" aria-hidden="true"></span>
+            Van Já
+          </div>
+          <p class="rodape-tag">Tecnologia para vans universitárias. Conectando rotas, motoristas e estudantes em todo o Piauí.</p>
+        </div>
+        <div class="rodape-col">
+          <h4>Plataforma</h4>
+          <a href="rotas.html">Ver rotas</a>
+          <a href="cadastrar.html">Cadastrar</a>
+          <a href="login.html">Entrar</a>
+        </div>
+        <div class="rodape-col">
+          <h4>Suporte</h4>
+          <a href="#ajuda">Central de ajuda</a>
+          <a href="mailto:contato@vanja.app">contato@vanja.app</a>
+          <a href="#">Termos &amp; privacidade</a>
+        </div>
+      </div>
+      <div class="rodape-base">
+        <p>© 2026 Van Já · Picos, PI</p>
+        <p>v1.0</p>
+      </div>
     </div>
   </footer>
 
-  <!-- SCRIPT -->
   <script src="js/utils.js"></script>
   <script src="js/app.js"></script>
 
