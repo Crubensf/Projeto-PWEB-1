@@ -11,7 +11,7 @@
       console.error(e);
     }
 
-    localStorage.removeItem('usuario');
+    clearAuth();
     window.location.href = 'index.html';
   }
 
@@ -426,22 +426,48 @@
       }
     }
 
+    // Restaura filtros salvos na sessão
+    const filtrosSalvos = getFiltrosRotas();
+    if (filtrosSalvos) {
+      if (inputOrigem && filtrosSalvos.origem)
+        inputOrigem.value = filtrosSalvos.origem;
+      if (inputDestino && filtrosSalvos.destino)
+        inputDestino.value = filtrosSalvos.destino;
+      if (filtrosSalvos.dia) {
+        chips.forEach((c) => {
+          if (mapDiaLabelToKey(c.textContent.trim()) === filtrosSalvos.dia) {
+            chips.forEach((x) => x.classList.remove('ativo'));
+            c.classList.add('ativo');
+          }
+        });
+      }
+    }
+
     async function carregarRotas() {
       try {
         const params = new URLSearchParams();
 
-        if (inputOrigem && inputOrigem.value)
-          params.append('origem', inputOrigem.value);
-        if (inputDestino && inputDestino.value)
-          params.append('destino', inputDestino.value);
+        const origemVal = inputOrigem ? inputOrigem.value : '';
+        const destinoVal = inputDestino ? inputDestino.value : '';
+
+        if (origemVal) params.append('origem', origemVal);
+        if (destinoVal) params.append('destino', destinoVal);
 
         let diaLabel = '';
+        let diaKey = '';
         const chipAtivo = document.querySelector('.chip-dia.ativo');
         if (chipAtivo) {
           diaLabel = chipAtivo.textContent.trim();
-          const diaKey = mapDiaLabelToKey(diaLabel);
+          diaKey = mapDiaLabelToKey(diaLabel);
           if (diaKey) params.append('dia', diaKey);
         }
+
+        // Persiste filtros na sessão (sobrevive à navegação entre páginas)
+        saveFiltrosRotas({
+          origem: origemVal,
+          destino: destinoVal,
+          dia: diaKey,
+        });
 
         const qs = params.toString();
         const rotas = await apiRequest(`/api/rotas${qs ? `?${qs}` : ''}`);

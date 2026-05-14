@@ -83,13 +83,64 @@ async function apiRequest(path, { method = 'GET', body = null, isForm = false } 
   }
 }
 
+// ==================== AUTH STORAGE ====================
+// localStorage guarda apenas dados de exibição (não-sensíveis).
+// O token de sessão fica no cookie HttpOnly — inacessível ao JavaScript.
+
+const AUTH_KEY = 'usuario';
+const AUTH_TS_KEY = 'usuario_ts';
+const AUTH_MAX_AGE_MS = 8 * 60 * 60 * 1000; // 8h, casa com a expiração do JWT
+
 function saveAuth(usuario) {
-  if (usuario) localStorage.setItem('usuario', JSON.stringify(usuario));
+  if (!usuario) return;
+  // Filtra: só guarda o que a UI realmente usa
+  const safe = {
+    nome: usuario.nome || '',
+    perfil: usuario.perfil || '',
+  };
+  try {
+    localStorage.setItem(AUTH_KEY, JSON.stringify(safe));
+    localStorage.setItem(AUTH_TS_KEY, String(Date.now()));
+  } catch (e) {
+    console.warn('Não foi possível salvar dados do usuário:', e);
+  }
 }
 
 function getUsuario() {
   try {
-    const raw = localStorage.getItem('usuario');
+    const ts = parseInt(localStorage.getItem(AUTH_TS_KEY) || '0', 10);
+    if (ts && Date.now() - ts > AUTH_MAX_AGE_MS) {
+      clearAuth();
+      return null;
+    }
+    const raw = localStorage.getItem(AUTH_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearAuth() {
+  try {
+    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(AUTH_TS_KEY);
+  } catch {}
+}
+
+// ==================== SESSION STORAGE ====================
+// Filtros da busca de rotas — persistem por aba enquanto o usuário navega.
+
+const FILTROS_ROTAS_KEY = 'filtros_rotas';
+
+function saveFiltrosRotas(filtros) {
+  try {
+    sessionStorage.setItem(FILTROS_ROTAS_KEY, JSON.stringify(filtros));
+  } catch {}
+}
+
+function getFiltrosRotas() {
+  try {
+    const raw = sessionStorage.getItem(FILTROS_ROTAS_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
