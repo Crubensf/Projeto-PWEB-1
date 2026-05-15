@@ -692,11 +692,14 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
 
 .preview-mini {
   position: absolute;
+  z-index: 3;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   padding: 10px 14px;
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    0 16px 36px -12px rgba(0,0,0,0.40),
+    0 4px 10px -4px rgba(0,0,0,0.20);
   font-size: 0.8125rem;
   display: flex;
   align-items: center;
@@ -704,14 +707,14 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
 }
 
 .preview-mini.mini-1 {
-  top: -16px;
-  right: 16px;
+  top: -28px;
+  right: -20px;
   animation: float-a 6s ease-in-out infinite;
 }
 
 .preview-mini.mini-2 {
-  bottom: -20px;
-  left: -12px;
+  bottom: -24px;
+  left: -16px;
   animation: float-b 7s ease-in-out infinite;
 }
 
@@ -1005,12 +1008,10 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
 
 @media (min-width: 900px) {
   .passos {
-    grid-template-columns: 2fr 1.5fr 2fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--space-5);
     align-items: stretch;
   }
-  .passo:nth-child(2) { margin-top: var(--space-7); }
-  .passo:nth-child(3) { margin-top: 0; }
 }
 
 .passo {

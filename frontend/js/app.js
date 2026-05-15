@@ -39,6 +39,54 @@
     }
   }
 
+  // ===================== HOME: CARD HERO AO VIVO =====================
+
+  function initHeroPreviewLive() {
+    const elPartida = document.getElementById('hero-partida-hora');
+    const elChegada = document.getElementById('hero-chegada-hora');
+    const elCountdown = document.getElementById('hero-countdown');
+    if (!elPartida && !elChegada && !elCountdown) return;
+
+    const DURACAO_MIN = 75; // 1h15, igual ao card
+
+    function fmtHora(d) {
+      return (
+        String(d.getHours()).padStart(2, '0') +
+        ':' +
+        String(d.getMinutes()).padStart(2, '0')
+      );
+    }
+
+    function atualizar() {
+      const agora = new Date();
+
+      // Próxima partida: próximo múltiplo de 15 min, com 8+ min de antecedência
+      const partida = new Date(agora);
+      partida.setSeconds(0, 0);
+      partida.setMinutes(
+        partida.getMinutes() + (15 - (partida.getMinutes() % 15))
+      );
+      while (partida.getTime() - agora.getTime() < 8 * 60000) {
+        partida.setMinutes(partida.getMinutes() + 15);
+      }
+
+      const chegada = new Date(partida.getTime() + DURACAO_MIN * 60000);
+      const minutos = Math.round(
+        (partida.getTime() - agora.getTime()) / 60000
+      );
+
+      if (elPartida) elPartida.textContent = fmtHora(partida);
+      if (elChegada) elChegada.textContent = fmtHora(chegada);
+      if (elCountdown) {
+        elCountdown.textContent =
+          minutos <= 1 ? 'Sai agora' : 'Sai em ' + minutos + ' min';
+      }
+    }
+
+    atualizar();
+    setInterval(atualizar, 30000);
+  }
+
   // ===================== HOME: ROTAS EM DESTAQUE =====================
 
   function criarCardRotaDestaque(rota) {
@@ -878,6 +926,7 @@
     initRotas();
     initPainel();
     initHomeRotas();
+    initHeroPreviewLive();
     initHeaderPainelUsuario();
   });
 })();
