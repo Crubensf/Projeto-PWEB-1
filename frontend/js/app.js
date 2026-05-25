@@ -26,16 +26,24 @@
   }
 
   function initHeaderPainelUsuario() {
-    const btnPainel = document.getElementById('btn-painel-usuario');
-    if (!btnPainel) return;
-
     const user = getUsuario();
 
-    if (user && user.perfil === 'motorista') {
-      btnPainel.style.display = 'inline-flex';
-      btnPainel.textContent = 'Painel do motorista';
+    const btnPainel = document.getElementById('btn-painel-usuario');
+    const btnLogin = document.getElementById('btn-login-link');
+    const btnCadastrar = document.getElementById('btn-cadastrar-link');
+    const btnSair = document.getElementById('btn-sair');
+
+    if (user) {
+      if (btnPainel) {
+        btnPainel.style.display = 'inline-flex';
+        btnPainel.textContent = user.perfil === 'motorista' ? 'Painel do motorista' : 'Meu painel';
+      }
+      if (btnLogin) btnLogin.style.display = 'none';
+      if (btnCadastrar) btnCadastrar.style.display = 'none';
+      if (btnSair) btnSair.style.display = 'inline-flex';
     } else {
-      btnPainel.style.display = 'none';
+      if (btnPainel) btnPainel.style.display = 'none';
+      if (btnSair) btnSair.style.display = 'none';
     }
   }
 

@@ -74,18 +74,19 @@ def clear_auth_cookie(response: Response) -> None:
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-origins = [
-    "http://127.0.0.1:5500",
-    "http://127.0.0.1:5501",
-    "http://localhost:5500",
-    "http://localhost:5501",
-]
-
 app = FastAPI(title="Van Já API")
 
+# Aceita qualquer origem em HTTP vindas de localhost, 127.0.0.1 ou redes privadas
+# (192.168.x.x, 10.x.x.x, 172.16-31.x.x) em qualquer porta — necessário para acesso via LAN
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origin_regex=(
+        r"http://(localhost|127\.0\.0\.1"
+        r"|192\.168\.\d{1,3}\.\d{1,3}"
+        r"|10\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+        r"|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})"
+        r"(:\d+)?"
+    ),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Accept"],
