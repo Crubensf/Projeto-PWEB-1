@@ -1,4 +1,6 @@
-const API_BASE = `http://${window.location.hostname}:8000`;
+// Em produção: Apache serve o frontend e faz proxy de /api/ → backend (porta 8000 interna).
+// Em dev local sem Docker: sete API_BASE para 'http://localhost:8000' manualmente.
+const API_BASE = '';
 
 // Loading overlay — injetado automaticamente no body
 (function () {

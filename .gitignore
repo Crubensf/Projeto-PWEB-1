@@ -3,3 +3,17 @@
 
 # pasta de configs do VS Code
 .vscode/
+
+# variáveis de ambiente — nunca comitar senhas!
+.env
+
+# cache Python
+__pycache__/
+*.pyc
+
+# banco SQLite local (dev)
+backend/vanja.db
+
+# certificados SSL gerados no build do Docker
+*.key
+*.crt

@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta, date, timezone
 from typing import Optional, List
 
@@ -39,13 +40,14 @@ from schemas import (
 # CONFIG GERAL / AUTH
 
 
-SECRET_KEY = "Ablublé"
+# Lê da variável de ambiente; fallback só para desenvolvimento local
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev_secret_key_nao_usar_em_producao")
 ALGORITHM = "HS256"
 
 # Cookie de autenticação — atributos centralizados
 COOKIE_NAME = "access_token"
 COOKIE_MAX_AGE = 60 * 60 * 8  # 8h, casa com a expiração do JWT
-COOKIE_SECURE = False  # true em produção (HTTPS); false em dev (HTTP local)
+COOKIE_SECURE = True  # HTTPS ativo via Apache
 COOKIE_SAMESITE = "lax"
 
 
@@ -78,10 +80,13 @@ app = FastAPI(title="Van Já API")
 
 # Aceita qualquer origem em HTTP vindas de localhost, 127.0.0.1 ou redes privadas
 # (192.168.x.x, 10.x.x.x, 172.16-31.x.x) em qualquer porta — necessário para acesso via LAN
+# Em produção o frontend é servido pelo Apache no mesmo domínio,
+# portanto as chamadas /api/ não são cross-origin e o CORS não é ativado.
+# Mantemos a regra abaixo para dev local (sem Docker).
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=(
-        r"http://(localhost|127\.0\.0\.1"
+        r"https?://(localhost|127\.0\.0\.1"
         r"|192\.168\.\d{1,3}\.\d{1,3}"
         r"|10\.\d{1,3}\.\d{1,3}\.\d{1,3}"
         r"|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})"
