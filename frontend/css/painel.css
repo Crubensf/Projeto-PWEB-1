@@ -267,3 +267,140 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* ===== Tags de status (etapa 2) ===== */
+.tag-status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.tag-reservada { background: #dff2e1; color: #18613b; }
+.tag-realizada { background: #e1ecf8; color: #1d4f8c; }
+.tag-cancelada { background: #f2e1e1; color: #7a2727; }
+
+/* ===== Cards de viagens do passageiro (etapa 2) ===== */
+#bloco-passageiro .linha-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+#bloco-passageiro .linha-card .linha-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+#bloco-passageiro .linha-card .nome-motorista {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+#bloco-passageiro .linha-card .linha-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+}
+
+#bloco-passageiro .linha-card .botao {
+  align-self: flex-start;
+}
+
+/* ===== Modal de avaliar (etapa 3) ===== */
+#modal-avaliar {
+  margin: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  padding: var(--space-6);
+  max-width: 460px;
+  width: 90vw;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+#modal-avaliar::backdrop { background: rgba(0, 0, 0, 0.4); }
+
+#modal-avaliar h2 { margin: 0 0 var(--space-3); font-size: 1.25rem; }
+#modal-avaliar .modal-rota-nome { font-weight: 600; margin: 0 0 var(--space-4); }
+
+#modal-avaliar fieldset.estrelas {
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+}
+#modal-avaliar fieldset.estrelas legend {
+  font-weight: 500;
+  font-size: 0.9375rem;
+  margin-bottom: var(--space-2);
+}
+
+#modal-avaliar .estrelas-grupo {
+  display: flex;
+  gap: var(--space-2);
+}
+
+#modal-avaliar .estrela {
+  font-size: 2rem;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 120ms ease, transform 120ms ease;
+}
+#modal-avaliar .estrela:hover { transform: scale(1.1); }
+#modal-avaliar .estrela.preenchida { color: #f3b300; }
+
+#modal-avaliar label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+  font-size: 0.9375rem;
+}
+#modal-avaliar textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  font: inherit;
+  margin-bottom: var(--space-3);
+  resize: vertical;
+}
+
+#modal-avaliar .modal-erro {
+  color: #c43030;
+  background: #fdecec;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r-md);
+  margin: 0 0 var(--space-3);
+  font-size: 0.875rem;
+}
+
+#modal-avaliar .modal-acoes {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.avaliada-marca {
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  font-style: italic;
+  align-self: flex-start;
+}

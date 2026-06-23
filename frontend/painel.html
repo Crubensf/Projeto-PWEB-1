@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' http:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.basemaps.cartocdn.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com; connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 http://localhost:8001 http://127.0.0.1:8001 https://nominatim.openstreetmap.org https://router.project-osrm.org; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Van Já • Painel</title>
 
@@ -10,8 +10,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=3">
-  <link rel="stylesheet" href="css/painel.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/painel.css?v=7">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0E1410" media="(prefers-color-scheme: dark)">
+  <link rel="apple-touch-icon" href="/imagens/van.png">
+  <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body class="page-painel">
 
@@ -170,8 +175,35 @@
     </section>
   </main>
 
-  <!-- Agora quem cuida do painel é o initPainel() do app.js -->
-  <script src="js/utils.js"></script>
-  <script src="js/app.js"></script>
+  <dialog id="modal-avaliar" aria-labelledby="modal-avaliar-titulo">
+    <form method="dialog" id="form-avaliar">
+      <h2 id="modal-avaliar-titulo">Avaliar viagem</h2>
+      <p class="modal-rota-nome" id="modal-avaliar-rota"></p>
+
+      <fieldset class="estrelas" aria-label="Nota">
+        <legend>Sua nota</legend>
+        <div class="estrelas-grupo" role="radiogroup">
+          <button type="button" class="estrela" data-nota="1" aria-label="1 estrela">★</button>
+          <button type="button" class="estrela" data-nota="2" aria-label="2 estrelas">★</button>
+          <button type="button" class="estrela" data-nota="3" aria-label="3 estrelas">★</button>
+          <button type="button" class="estrela" data-nota="4" aria-label="4 estrelas">★</button>
+          <button type="button" class="estrela" data-nota="5" aria-label="5 estrelas">★</button>
+        </div>
+      </fieldset>
+
+      <label for="modal-comentario">Comentário (opcional)</label>
+      <textarea id="modal-comentario" rows="3" maxlength="500" placeholder="Conte como foi a viagem..."></textarea>
+
+      <p class="modal-erro" id="modal-avaliar-erro" role="alert" hidden></p>
+
+      <menu class="modal-acoes">
+        <button type="button" id="modal-avaliar-cancelar" class="botao botao-suave">Cancelar</button>
+        <button type="submit" id="modal-avaliar-confirmar" class="botao botao-primario" disabled>Enviar</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="js/utils.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

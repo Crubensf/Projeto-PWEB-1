@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' http:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.basemaps.cartocdn.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com; connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 http://localhost:8001 http://127.0.0.1:8001 https://nominatim.openstreetmap.org https://router.project-osrm.org; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Acesso • Van Já</title>
 
@@ -10,8 +10,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./css/style.css?v=3">
-  <link rel="stylesheet" href="./css/login.css?v=3">
+  <link rel="stylesheet" href="./css/style.css?v=7">
+  <link rel="stylesheet" href="./css/login.css?v=7">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#15803D" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0E1410" media="(prefers-color-scheme: dark)">
+  <link rel="apple-touch-icon" href="/imagens/van.png">
+  <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body class="login-bg">
   <main class="login-container" role="main">
@@ -66,7 +71,7 @@
   </main>
 
   <!-- Script principal da aplicação -->
-  <script src="js/utils.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/utils.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

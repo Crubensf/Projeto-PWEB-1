@@ -4,7 +4,7 @@
    ============================================================ */
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
 
   /* ----- Surfaces & Ink ----- */
   --bg: #FEFCF8;            /* cream quente, evoca viagem */
@@ -81,6 +81,8 @@
 
   --maxw: 1280px;
   --maxw-narrow: 920px;
+
+  --header-bg: rgba(250, 250, 248, 0.78);
 }
 
 /* ===== Reset ===== */
@@ -263,7 +265,7 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(250, 250, 248, 0.78);
+  background: var(--header-bg);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--line);
@@ -1339,3 +1341,117 @@ small { font-size: 0.8125rem; color: var(--ink-muted); }
   border-color: var(--paper) !important;
   border-top-color: transparent !important;
 }
+
+/* ===== Skeleton loaders (etapa 5) ===== */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.05) 0px,
+    rgba(0, 0, 0, 0.12) 80px,
+    rgba(0, 0, 0, 0.05) 160px
+  );
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-shimmer 1.2s linear infinite;
+  border-radius: 6px;
+  color: transparent !important;
+  user-select: none;
+}
+
+.skeleton-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.skeleton-card .skeleton-linha {
+  height: 14px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.05) 0px,
+    rgba(0, 0, 0, 0.12) 80px,
+    rgba(0, 0, 0, 0.05) 160px
+  );
+  background-size: 200px 100%;
+  animation: skeleton-shimmer 1.2s linear infinite;
+  border-radius: 4px;
+}
+.skeleton-card .skeleton-linha.curta { width: 40%; }
+.skeleton-card .skeleton-linha.media { width: 70%; }
+.skeleton-card .skeleton-linha.cheia { width: 90%; }
+
+/* ===== Dark mode (etapa 5) — override de variáveis. */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --header-bg: rgba(14, 20, 16, 0.82);
+  --bg: #0E1410;
+  --bg-tint: #131A16;
+  --bg-deep: #FEFCF8;
+  --paper: #161C18;
+  --paper-2: #1A211C;
+
+  --ink: #F2EFE9;
+  --ink-2: #D7D3CA;
+  --ink-muted: #9CA3AD;
+  --ink-fade: #6D7682;
+  --ink-faint: #2B3431;
+
+  --line: #2A332E;
+  --line-strong: #3D4842;
+  --line-dark: #DADAD3;
+
+  --go: #22C55E;
+  --go-soft: #14321F;
+  --go-deep: #4ADE80;
+  --go-glow: rgba(34, 197, 94, 0.32);
+
+  --sun: #FBBF24;
+  --sun-soft: #3F2C0B;
+  --sun-deep: #FCD34D;
+
+  --sky: #38BDF8;
+  --sky-soft: #0B2A3A;
+
+  --danger: #F87171;
+  --danger-soft: #3A1414;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.30);
+  --shadow-lg: 0 20px 48px -16px rgba(0, 0, 0, 0.60), 0 8px 16px -8px rgba(0, 0, 0, 0.35);
+}
+
+/* Skeleton em dark mode usa tons mais claros */
+[data-theme="dark"] .skeleton-card .skeleton-linha,
+[data-theme="dark"] .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 0px,
+    rgba(255, 255, 255, 0.14) 80px,
+    rgba(255, 255, 255, 0.06) 160px
+  );
+  background-size: 200px 100%;
+}
+
+/* ===== Toggle dark mode no header ===== */
+.btn-tema {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 6px 12px;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  color: var(--ink);
+  transition: background var(--t) var(--ease), border-color var(--t) var(--ease);
+}
+.btn-tema:hover { background: var(--bg-tint); border-color: var(--line-strong); }

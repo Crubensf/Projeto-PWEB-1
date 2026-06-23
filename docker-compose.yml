@@ -1,5 +1,19 @@
 services:
 
+  # Cache + rate-limit distribuído
+  redis:
+    image: redis:7-alpine
+    container_name: vanja_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   # Banco de dados
   postgres:
     image: postgres:16-alpine
@@ -27,11 +41,21 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       SECRET_KEY: ${SECRET_KEY}
+      REDIS_URL: redis://redis:6379/0
+      LOG_PRETTY: "false"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     expose:
       - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3).status==200 else sys.exit(1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   # Apache (frontend + proxy reverso)
   apache:
@@ -43,8 +67,42 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    # Em dev, monta os estáticos do host por cima do que o Dockerfile COPY-ou.
+    # Edita HTML/CSS/JS e atualiza a página, sem rebuild.
+    # Em produção, comente esses volumes (ou use override file) para servir
+    # exclusivamente o que foi empacotado na imagem.
+    volumes:
+      - ./frontend/css:/usr/local/apache2/htdocs/css:ro
+      - ./frontend/js:/usr/local/apache2/htdocs/js:ro
+      - ./frontend/imagens:/usr/local/apache2/htdocs/imagens:ro
+      - ./frontend/index.html:/usr/local/apache2/htdocs/index.html:ro
+      - ./frontend/login.html:/usr/local/apache2/htdocs/login.html:ro
+      - ./frontend/cadastrar.html:/usr/local/apache2/htdocs/cadastrar.html:ro
+      - ./frontend/cadastroRotas.html:/usr/local/apache2/htdocs/cadastroRotas.html:ro
+      - ./frontend/rotas.html:/usr/local/apache2/htdocs/rotas.html:ro
+      - ./frontend/painel.html:/usr/local/apache2/htdocs/painel.html:ro
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+
+  # Backup diário Postgres (cron 03:00 UTC, retém 7 dias)
+  pg_backup:
+    build:
+      context: ./backup
+      dockerfile: Dockerfile
+    container_name: vanja_pg_backup
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
+  redis_data:

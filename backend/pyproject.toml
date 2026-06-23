@@ -1,0 +1,20 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+# E,F: pyflakes/pycodestyle; W: warning; I: isort; UP: pyupgrade
+# B: bugbear (bugs comuns); SIM: simplify; PL: pylint subset; RUF: ruff-only
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "E501",   # line-length (já controlado pelo formatter)
+    "B008",   # função no default — FastAPI Depends() é OK
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B018"]  # asserts no body
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

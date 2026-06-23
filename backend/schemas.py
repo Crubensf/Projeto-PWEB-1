@@ -1,9 +1,7 @@
+from datetime import date, datetime
+from typing import Literal
 
-from datetime import datetime, date
-from typing import Optional, List, Literal
-
-from pydantic import BaseModel, EmailStr, Field
-
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 # Padrões de validação reusados
 HORA_PATTERN = r"^\d{2}:\d{2}$"
@@ -12,6 +10,7 @@ DiaSemana = Literal["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
 
 
 # ============ USUÁRIO ============
+
 
 class UsuarioBase(BaseModel):
     nome: str = Field(..., min_length=2, max_length=120)
@@ -23,20 +22,19 @@ class UsuarioOut(UsuarioBase):
     id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UsuarioCreate(UsuarioBase):
-    senha: str = Field(..., min_length=6, max_length=200)
-    cnh: Optional[str] = Field(None, pattern=r"^\d{11}$")
+    senha: str = Field(..., min_length=8, max_length=200)
+    cnh: str | None = Field(None, pattern=r"^\d{11}$")
 
 
 class UsuarioUpdate(BaseModel):
-    nome: Optional[str] = Field(None, min_length=2, max_length=120)
-    email: Optional[EmailStr] = Field(None, max_length=120)
-    senha: Optional[str] = Field(None, min_length=6, max_length=200)
-    cnh: Optional[str] = Field(None, pattern=r"^\d{11}$")
+    nome: str | None = Field(None, min_length=2, max_length=120)
+    email: EmailStr | None = Field(None, max_length=120)
+    senha: str | None = Field(None, min_length=8, max_length=200)
+    cnh: str | None = Field(None, pattern=r"^\d{11}$")
 
 
 class LoginData(BaseModel):
@@ -52,15 +50,20 @@ class Token(BaseModel):
 
 # ============ ROTAS / ROTAS (MOTORISTA) ============
 
+
 class RotaBase(BaseModel):
     nome: str = Field(..., min_length=2, max_length=120)
     origem: str = Field(..., min_length=2, max_length=120)
     destino: str = Field(..., min_length=2, max_length=120)
+    origem_lat: float | None = Field(None, ge=-90, le=90)
+    origem_lng: float | None = Field(None, ge=-180, le=180)
+    destino_lat: float | None = Field(None, ge=-90, le=90)
+    destino_lng: float | None = Field(None, ge=-180, le=180)
     hora_ida: str = Field(..., pattern=HORA_PATTERN)
-    hora_volta: Optional[str] = Field(None, pattern=HORA_PATTERN)
+    hora_volta: str | None = Field(None, pattern=HORA_PATTERN)
     vagas: int = Field(..., ge=1, le=99)
-    veiculo: Optional[str] = Field(None, max_length=30)
-    dias_semana: List[DiaSemana] = Field(..., min_length=1, max_length=7)
+    veiculo: str | None = Field(None, max_length=30)
+    dias_semana: list[DiaSemana] = Field(..., min_length=1, max_length=7)
     preco: float = Field(..., ge=0, le=10000)
 
 
@@ -69,44 +72,102 @@ class RotaCreate(RotaBase):
 
 
 class RotaUpdate(BaseModel):
-    nome: Optional[str] = Field(None, min_length=2, max_length=120)
-    origem: Optional[str] = Field(None, min_length=2, max_length=120)
-    destino: Optional[str] = Field(None, min_length=2, max_length=120)
-    hora_ida: Optional[str] = Field(None, pattern=HORA_PATTERN)
-    hora_volta: Optional[str] = Field(None, pattern=HORA_PATTERN)
-    vagas: Optional[int] = Field(None, ge=1, le=99)
-    veiculo: Optional[str] = Field(None, max_length=30)
-    dias_semana: Optional[List[DiaSemana]] = Field(None, min_length=1, max_length=7)
-    preco: Optional[float] = Field(None, ge=0, le=10000)
+    nome: str | None = Field(None, min_length=2, max_length=120)
+    origem: str | None = Field(None, min_length=2, max_length=120)
+    destino: str | None = Field(None, min_length=2, max_length=120)
+    origem_lat: float | None = Field(None, ge=-90, le=90)
+    origem_lng: float | None = Field(None, ge=-180, le=180)
+    destino_lat: float | None = Field(None, ge=-90, le=90)
+    destino_lng: float | None = Field(None, ge=-180, le=180)
+    hora_ida: str | None = Field(None, pattern=HORA_PATTERN)
+    hora_volta: str | None = Field(None, pattern=HORA_PATTERN)
+    vagas: int | None = Field(None, ge=1, le=99)
+    veiculo: str | None = Field(None, max_length=30)
+    dias_semana: list[DiaSemana] | None = Field(None, min_length=1, max_length=7)
+    preco: float | None = Field(None, ge=0, le=10000)
+
+
+class MotoristaResumoCard(BaseModel):
+    """Subconjunto público do motorista embutido em cards de rota."""
+
+    id: int
+    nome: str
+    media_avaliacoes: float | None = None
+    total_avaliacoes: int = 0
 
 
 class RotaOut(RotaBase):
     id: int
     motorista_id: int
+    motorista: MotoristaResumoCard | None = None
+    # Estimativas calculadas a partir das coordenadas (None se não houver geo)
+    duracao_estimada_min: int | None = None
+    hora_chegada_estimada: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RotasListagem(BaseModel):
+    items: list[RotaOut]
+    total: int
+    limit: int
+    offset: int
+
+
+OrdenarRotaPor = Literal["preco_asc", "preco_desc", "hora_asc", "recentes"]
 
 
 # ============ VIAGENS (PASSAGEIRO) ============
+
+StatusViagem = Literal["reservada", "realizada", "cancelada"]
+# Estudante só pode atingir esses dois status; "realizada" é prerrogativa do motorista
+StatusViagemMotorista = Literal["realizada", "cancelada"]
+
 
 class ViagemCreate(BaseModel):
     rota_id: int
     data: date
 
 
-class ViagemUpdate(BaseModel):
-    status: Optional[str] = None
+class ViagemStatusUpdate(BaseModel):
+    status: StatusViagemMotorista
 
 
 class ViagemOut(BaseModel):
     id: int
     rota: RotaOut
     data: date
-    status: str
+    status: StatusViagem
+    passageiro_id: int
+    avaliada: bool = False
+
+
+# ============ AVALIAÇÕES ============
+
+
+class AvaliacaoCreate(BaseModel):
+    nota: int = Field(..., ge=1, le=5)
+    comentario: str | None = Field(None, max_length=500)
+
+
+class AvaliacaoOut(BaseModel):
+    id: int
+    nota: int
+    comentario: str | None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MotoristaPublicoOut(BaseModel):
+    id: int
+    nome: str
+    media_avaliacoes: float | None = None
+    total_avaliacoes: int = 0
 
 
 # ============ RESUMO MOTORISTA ============
+
 
 class MotoristaResumo(BaseModel):
     rotas_ativas: int

@@ -261,3 +261,238 @@
   border: 1px dashed var(--line-strong);
   border-radius: var(--r-lg);
 }
+
+/* ===== Modal de reserva (etapa 2) ===== */
+#modal-reservar {
+  /* margin:auto reativa o centramento UA que o reset global * {margin:0} apaga */
+  margin: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  padding: var(--space-6);
+  max-width: 420px;
+  width: 90vw;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+#modal-reservar::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#modal-reservar h2 {
+  margin: 0 0 var(--space-3);
+  font-size: 1.25rem;
+}
+
+#modal-reservar .modal-rota-nome {
+  font-weight: 600;
+  margin: 0 0 var(--space-1);
+}
+
+#modal-reservar .modal-rota-dias {
+  margin: 0 0 var(--space-4);
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+
+#modal-reservar label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+  font-size: 0.9375rem;
+}
+
+#modal-reservar input[type="date"] {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  font: inherit;
+  margin-bottom: var(--space-3);
+}
+
+#modal-reservar .modal-erro {
+  color: #c43030;
+  background: #fdecec;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r-md);
+  margin: 0 0 var(--space-3);
+  font-size: 0.875rem;
+}
+
+#modal-reservar .modal-acoes {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ===== Rodapé do card com motorista + rating (etapa 3) ===== */
+.linha-card .rota-motorista {
+  border-top: 1px dashed var(--line);
+  padding-top: var(--space-3);
+  margin-top: var(--space-3);
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.motorista-nome { font-weight: 600; color: var(--ink); }
+.motorista-rating { color: #d49000; font-weight: 600; }
+.motorista-rating small { color: var(--ink-muted); font-weight: 400; }
+.motorista-rating-vazio { font-style: italic; }
+
+/* ===== Filtros avançados (etapa 5) ===== */
+.filtros-avancados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: end;
+  padding: var(--space-3) 0 var(--space-4);
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}
+
+.filtros-avancados label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filtros-avancados input,
+.filtros-avancados select {
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  font: 400 0.9375rem var(--font-sans);
+  color: var(--ink);
+  background: var(--paper);
+  min-width: 110px;
+}
+.filtros-avancados input[type="number"] { width: 100px; }
+.filtros-avancados input[type="time"] { width: 120px; }
+
+.carregar-mais-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5) 0;
+}
+.resumo-paginacao {
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+/* ===== Mapa da listagem (etapa 7) ===== */
+.mapa-secao { padding: var(--space-4) 0 0; }
+.mapa-listagem {
+  width: 100%;
+  height: 360px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line-strong);
+  overflow: hidden;
+  background: var(--paper-2);
+}
+.mapa-listagem .leaflet-popup-content { font-family: var(--font-sans); margin: 8px 12px; }
+.mapa-listagem .popup-rota strong { display: block; margin-bottom: 2px; }
+.mapa-listagem .popup-rota small { color: var(--ink-muted); }
+
+[data-theme="dark"] .mapa-listagem { background: #1A211C; }
+
+/* Fundo neutro enquanto os tiles ainda não carregaram */
+.mapa-listagem { background: #eef0ec; }
+
+/* ===== Trajeto em camadas (casing + núcleo + energia) ===== */
+/* O casing e o núcleo são sólidos; só a camada de "energia" anima. */
+.leaflet-overlay-pane path.rota-casing,
+.leaflet-overlay-pane path.rota-core {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.leaflet-overlay-pane path.rota-flow {
+  stroke-linecap: round;
+  animation: trajeto-fluxo 0.9s linear infinite;
+}
+@keyframes trajeto-fluxo {
+  to { stroke-dashoffset: -15; }   /* dashArray '1 14' → período 15 */
+}
+
+/* ===== Marcadores ===== */
+/* Origem: ponto esmeralda limpo com anel branco e sombra. */
+.pin .pin-dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--go, #15803D);
+  box-shadow: 0 0 0 3px #fff, 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Campus (destino): marcador-herói vermelho com halo pulsante. */
+.pin .pin-campus {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
+.pin .pin-campus-core {
+  position: relative;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #DC2626;
+  box-shadow: 0 0 0 4px #fff, 0 3px 9px rgba(0, 0, 0, 0.45);
+}
+.pin .pin-campus::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.35);
+  animation: campus-pulso 2.2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes campus-pulso {
+  0%   { transform: scale(0.6); opacity: 0.75; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* ===== Duração estimada no card ===== */
+.horarios { align-items: center; }
+.horario-duracao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--space-2);
+}
+.horario-duracao .seta-trajeto {
+  color: var(--ink-fade);
+  font-size: 0.875rem;
+  line-height: 1;
+}
+.duracao-badge {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--go);
+  background: var(--go-soft);
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+}

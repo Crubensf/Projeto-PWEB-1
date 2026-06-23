@@ -11,9 +11,15 @@
 __pycache__/
 *.pyc
 
-# banco SQLite local (dev)
+# banco SQLite local (dev) — agora sempre em backend/, mas ignora os dois
+# por segurança caso algum CWD antigo recrie na raiz
 backend/vanja.db
+/vanja.db
+*.db-journal
 
 # certificados SSL gerados no build do Docker
 *.key
 *.crt
+
+# dumps de Postgres do serviço pg_backup
+/backups/

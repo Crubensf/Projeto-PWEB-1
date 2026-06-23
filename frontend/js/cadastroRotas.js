@@ -261,10 +261,20 @@ document.addEventListener('DOMContentLoaded', function () {
       form.querySelectorAll('input[name="dias"]:checked')
     ).map(i => i.value);
 
+    const parseNumOrNull = (id) => {
+      const el = document.getElementById(id);
+      const v = el && el.value ? parseFloat(el.value) : NaN;
+      return Number.isFinite(v) ? v : null;
+    };
+
     const rota = {
       nome,
       origem,
       destino,
+      origem_lat: parseNumOrNull('origem_lat'),
+      origem_lng: parseNumOrNull('origem_lng'),
+      destino_lat: parseNumOrNull('destino_lat'),
+      destino_lng: parseNumOrNull('destino_lng'),
       hora_ida: horaIda,
       hora_volta: horaVolta || null,
       vagas,
